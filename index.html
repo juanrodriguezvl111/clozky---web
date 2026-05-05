@@ -622,6 +622,54 @@
             font-family: 'Inter', sans-serif; transition: all 0.2s;
         }
         .sz:hover, .sz.active { background: var(--white); color: var(--black); border-color: var(--white); }
+        .sz:disabled { opacity: 0.28; cursor: not-allowed; text-decoration: line-through; border-color: rgba(255,255,255,0.06); color: var(--gray-light); }
+        .sz:disabled:hover { background: transparent; color: var(--gray-light); border-color: rgba(255,255,255,0.06); }
+
+        /* ── QUANTITY SELECTOR (modal) ── */
+        .qty-row { display: flex; align-items: center; margin-bottom: 28px; gap: 0; }
+        .qty-btn {
+            width: 38px; height: 38px; background: transparent;
+            border: 1px solid rgba(255,255,255,0.18); color: var(--white);
+            font-size: 18px; line-height: 1; cursor: none; font-family: 'Inter', sans-serif;
+            transition: background 0.2s, color 0.2s;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .qty-btn:hover { background: var(--white); color: var(--black); }
+        .qty-num {
+            min-width: 48px; height: 38px;
+            border-top: 1px solid rgba(255,255,255,0.18);
+            border-bottom: 1px solid rgba(255,255,255,0.18);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 13px; font-weight: 500; letter-spacing: 0.08em;
+        }
+
+        /* ── QUANTITY CONTROLS (cart) ── */
+        .ci-qty-row { display: flex; align-items: center; margin-top: 8px; gap: 0; }
+        .ci-qty-btn {
+            width: 26px; height: 26px; background: transparent;
+            border: 1px solid rgba(255,255,255,0.12); color: var(--white);
+            font-size: 14px; line-height: 1; cursor: none;
+            display: flex; align-items: center; justify-content: center;
+            transition: background 0.2s;
+        }
+        .ci-qty-btn:hover { background: rgba(255,255,255,0.08); }
+        .ci-qty-num {
+            min-width: 32px; height: 26px;
+            border-top: 1px solid rgba(255,255,255,0.12);
+            border-bottom: 1px solid rgba(255,255,255,0.12);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 11px; letter-spacing: 0.06em;
+        }
+        .sold-out-overlay {
+            position: absolute; inset: 0; z-index: 3;
+            background: rgba(0,0,0,0.55);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .sold-out-overlay span {
+            font-size: 10px; letter-spacing: 0.4em; text-transform: uppercase;
+            color: rgba(255,255,255,0.55); border: 1px solid rgba(255,255,255,0.25);
+            padding: 6px 16px; background: rgba(0,0,0,0.7);
+        }
         .modal-desc { font-size: 13px; line-height: 2; color: var(--gray-light); margin-bottom: 32px; }
 
         /* ── REVEAL UTILS ── */
@@ -711,8 +759,8 @@
             <span>Total</span>
             <span class="cart-total-price" id="cart-total">$0</span>
         </div>
-        <button class="checkout-btn" onclick="goCheckout()">Pedir por Instagram DM</button>
-        <p class="checkout-note">Tu pedido se confirma vía @clozkystudios</p>
+        <button class="checkout-btn" onclick="goCheckout()">Finalizar Compra</button>
+        <p class="checkout-note">Pago seguro con Wompi · Envíos nacionales</p>
     </div>
 </div>
 
@@ -731,13 +779,12 @@
             <h2 class="modal-name" id="modal-name">—</h2>
             <p class="modal-price" id="modal-price">—</p>
             <p class="size-label">Selecciona tu talla</p>
-            <div class="sizes">
-                <button class="sz" onclick="pickSize(this)">XS</button>
-                <button class="sz" onclick="pickSize(this)">S</button>
-                <button class="sz" onclick="pickSize(this)">M</button>
-                <button class="sz" onclick="pickSize(this)">L</button>
-                <button class="sz" onclick="pickSize(this)">XL</button>
-                <button class="sz" onclick="pickSize(this)">XXL</button>
+            <div class="sizes" id="modal-sizes"></div>
+            <p class="size-label" style="margin-top:22px">Cantidad</p>
+            <div class="qty-row">
+                <button class="qty-btn" onclick="changeModalQty(-1)">−</button>
+                <span class="qty-num" id="modal-qty-num">1</span>
+                <button class="qty-btn" onclick="changeModalQty(1)">+</button>
             </div>
             <p class="modal-desc">Tee oversized de alta calidad. Serigrafía premium. 100% algodón 240g. Parte de la primera cápsula de Clozky Studios.</p>
             <button class="quick-add" style="cursor:none" onclick="addFromModal()">Añadir a la Bolsa</button>
@@ -1007,6 +1054,8 @@
     <p>Colombia · High End Streetwear</p>
 </div>
 
+<script src="inventario.js"></script>
+
 <script>
     /* ── CURSOR ── */
     const cur = document.getElementById('cursor');
@@ -1092,6 +1141,7 @@
     };
 
     let activeProductId = null;
+    let modalQty = 1;
 
     function openProduct(id) {
         activeProductId = id;
@@ -1099,8 +1149,17 @@
         openModal(p.name, p.displayPrice, p.imgs, p.price);
     }
     function addProductToCart(id) {
-        const p = PRODUCTS[id];
-        addToCart(p.name, p.price, 'M');
+        openProduct(id); // Siempre abrir modal para seleccionar talla
+    }
+
+    function renderSizes(productId) {
+        const tallas = ['S', 'M', 'L', 'XL'];
+        const container = document.getElementById('modal-sizes');
+        container.innerHTML = tallas.map(t => {
+            const ok = hayStock(productId, t);
+            return `<button class="sz" onclick="${ok ? 'pickSize(this)' : ''}"
+                        ${ok ? '' : 'disabled'} data-talla="${t}">${t}</button>`;
+        }).join('');
     }
 
     /* ── CART STATE ── */
@@ -1128,27 +1187,52 @@
             return;
         }
         ftr.style.display = 'block';
-        body.innerHTML = cart.map((item, i) => `
+        body.innerHTML = cart.map((item, i) => {
+            const imgSrc = item.productId && PRODUCTS[item.productId]
+                ? PRODUCTS[item.productId].imgs[0] : null;
+            const thumb = imgSrc
+                ? `<img src="${imgSrc}" alt="${item.name}" style="width:100%;height:100%;object-fit:cover;display:block">`
+                : `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2a2a2a" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="1"/></svg>`;
+            return `
             <div class="cart-item">
-                <div class="ci-thumb">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2a2a2a" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="1"/></svg>
-                </div>
+                <div class="ci-thumb">${thumb}</div>
                 <div>
                     <p class="ci-name">${item.name}</p>
-                    <p class="ci-detail">Talla: ${item.size} &nbsp;·&nbsp; Cant: ${item.qty}</p>
+                    <p class="ci-detail">Talla: ${item.size}</p>
+                    <div class="ci-qty-row">
+                        <button class="ci-qty-btn" onclick="changeCartQty(${i},-1)">−</button>
+                        <span class="ci-qty-num">${item.qty}</span>
+                        <button class="ci-qty-btn" onclick="changeCartQty(${i},1)">+</button>
+                    </div>
                 </div>
-                <span class="ci-price">${fmt(item.price)}</span>
-            </div>`).join('');
+                <span class="ci-price">${fmt(item.price * item.qty)}</span>
+            </div>`;
+        }).join('');
         document.getElementById('cart-total').textContent = fmt(cartTotal());
     }
 
-    function addToCart(name, price, size) {
+    function addToCart(name, price, size, productId, qty) {
+        qty = qty || 1;
         const key = name + size;
         const ex = cart.find(i => i.name + i.size === key);
-        if (ex) ex.qty++;
-        else cart.push({ name, price, size, qty: 1 });
+        if (ex) ex.qty += qty;
+        else cart.push({ name, price, size, qty, productId: productId || null });
+        localStorage.setItem('clzky_cart', JSON.stringify(cart));
         refreshCount();
         openCart();
+    }
+
+    function changeCartQty(index, delta) {
+        const item = cart[index];
+        if (delta > 0) {
+            const maxStock = stockDe(item.productId, item.size);
+            if (item.qty >= maxStock) return;
+        }
+        item.qty += delta;
+        if (item.qty <= 0) cart.splice(index, 1);
+        localStorage.setItem('clzky_cart', JSON.stringify(cart));
+        refreshCount();
+        renderCartBody();
     }
 
     function openCart() {
@@ -1168,12 +1252,20 @@
         modalImgIndex = 0;
         activeProduct = { name, price: rawPrice };
         chosenSize = null;
+        modalQty = 1;
+        document.getElementById('modal-qty-num').textContent = 1;
         document.getElementById('modal-name').textContent = name;
         document.getElementById('modal-price').textContent = displayPrice;
-        document.querySelectorAll('.sz').forEach(b => b.classList.remove('active'));
+        renderSizes(activeProductId);
         renderModalImg();
         document.getElementById('prod-modal').classList.add('open');
         document.getElementById('dim').classList.add('on');
+    }
+
+    function changeModalQty(delta) {
+        const maxStock = chosenSize ? stockDe(activeProductId, chosenSize) : 10;
+        modalQty = Math.min(Math.max(1, modalQty + delta), maxStock || 10);
+        document.getElementById('modal-qty-num').textContent = modalQty;
     }
 
     function renderModalImg() {
@@ -1220,13 +1312,38 @@
     }
     function addFromModal() {
         if (!chosenSize) { alert('Por favor selecciona una talla.'); return; }
-        if (activeProduct) { addToCart(activeProduct.name, activeProduct.price, chosenSize); closeModal(); }
+        if (activeProduct) { addToCart(activeProduct.name, activeProduct.price, chosenSize, activeProductId, modalQty); closeModal(); }
     }
 
     /* ── CHECKOUT ── */
     function goCheckout() {
-        window.open('https://ig.me/m/clozkystudios', '_blank');
+        if (!cart.length) return;
+        localStorage.setItem('clzky_cart', JSON.stringify(cart));
+        window.location.href = 'checkout.html';
     }
+
+    // Mostrar overlay AGOTADO en tarjetas sin stock
+    function marcarAgotados() {
+        document.querySelectorAll('.product-card').forEach(card => {
+            const onclick = card.getAttribute('onclick') || '';
+            const m = onclick.match(/openProduct\((\d+)\)/);
+            if (!m) return;
+            const id = parseInt(m[1]);
+            if (!hayAlgunStock(id)) {
+                const wrap = card.querySelector('.product-img-wrap');
+                if (wrap && !wrap.querySelector('.sold-out-overlay')) {
+                    const ov = document.createElement('div');
+                    ov.className = 'sold-out-overlay';
+                    ov.innerHTML = '<span>Agotado</span>';
+                    wrap.appendChild(ov);
+                }
+            }
+        });
+    }
+    marcarAgotados();
+
+    // Sincronizar inventario real desde Supabase y re-renderizar
+    sincronizarInventario().then(() => marcarAgotados());
 </script>
 </body>
 </html>

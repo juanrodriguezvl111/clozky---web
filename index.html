@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
     <title>CLOZKY — Only For The Boss, Only For You</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -702,6 +702,24 @@
         ::-webkit-scrollbar-track { background: var(--black); }
         ::-webkit-scrollbar-thumb { background: #2a2a2a; }
 
+        /* ── TOUCH DEVICES: ocultar cursor personalizado ── */
+        @media (pointer: coarse) {
+            body { cursor: auto; }
+            .cursor, .cursor-ring { display: none !important; }
+            a, button { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+            .cart-btn, .modal-close, .cart-close, .quick-add,
+            .sz, .qty-btn, .ci-qty-btn, .hamburger,
+            .checkout-btn, .modal-view-tab { cursor: pointer !important; }
+        }
+
+        /* En touch: mostrar botón "Add to Bag" siempre (no solo en hover) */
+        @media (hover: none) {
+            .product-hover-layer {
+                opacity: 1;
+                background: linear-gradient(to top, rgba(0,0,0,0.72) 0%, transparent 45%);
+            }
+        }
+
         /* ── HAMBURGER ── */
         .hamburger {
             display: none; flex-direction: column; gap: 5px;
@@ -732,32 +750,94 @@
         }
         .mobile-menu a:hover { color: var(--red); }
 
-        /* ── RESPONSIVE ── */
+        /* ── RESPONSIVE 900px ── */
         @media (max-width: 900px) {
-            nav { padding: 20px 24px; }
-            nav.scrolled { padding: 14px 24px; }
+            /* Nav */
+            nav { padding: 18px 20px; }
+            nav.scrolled { padding: 12px 20px; }
             .nav-links { display: none; }
             .hamburger { display: flex; }
             .mobile-menu { display: flex; }
-            .products-grid { grid-template-columns: 1fr 1fr; }
+
+            /* Hero */
+            #hero { padding-top: 80px; padding-bottom: 64px; }
+            .hero-cta { flex-direction: column; align-items: center; gap: 12px; }
+            .btn-primary, .btn-ghost { width: 100%; max-width: 300px; text-align: center; padding: 16px 24px; }
+
+            /* Collection header */
+            .collection-header { padding: 72px 20px 48px; }
+            .collection-desc { font-size: 13px; margin-top: 28px; }
+
+            /* Products */
+            #shop { padding: 0 0 80px; }
+            .products-grid { grid-template-columns: 1fr 1fr; gap: 2px; }
             .products-grid .product-card:last-child { grid-column: span 2; }
+            .product-info { padding: 14px 14px 18px; }
+            .product-name { font-size: 11px; }
+            .product-price { font-size: 18px; }
+            .quick-add { padding: 14px; font-size: 9px; }
+
+            /* Brand */
             #brand { grid-template-columns: 1fr; }
             .brand-visual { min-height: 56vw; }
-            .brand-content { padding: 60px 28px; }
+            .brand-content { padding: 48px 20px; }
+            .brand-title { font-size: clamp(36px, 9vw, 72px); margin-bottom: 24px; }
+            .brand-text { font-size: 13px; margin-bottom: 32px; }
+
+            /* Lookbook */
+            #lookbook .lookbook-header { padding: 48px 20px 28px; }
             .lookbook-grid { grid-template-columns: 1fr 1fr; grid-template-rows: auto; height: auto; }
+            .lk-item { min-height: 200px; }
+            .lk-item img { min-height: 200px; }
             .lk-item.span2 { grid-row: span 1; }
-            .lk-placeholder { min-height: 220px; }
-            footer { grid-template-columns: 1fr; padding: 48px 24px 32px; }
-            .footer-bottom { flex-direction: column; gap: 10px; text-align: center; padding: 20px 24px; }
+            .lk-placeholder { min-height: 200px; }
+
+            /* Instagram */
+            #instagram { padding: 80px 20px; }
+
+            /* Footer */
+            footer { grid-template-columns: 1fr; padding: 48px 20px 32px; gap: 32px; }
+            .footer-bottom { flex-direction: column; gap: 8px; text-align: center; padding: 18px 20px; }
+
+            /* Cart */
             .cart-sidebar { width: 100%; right: -100%; }
-            .modal-box { grid-template-columns: 1fr; }
+            .cart-hdr { padding: 20px; }
+            .cart-body { padding: 20px; }
+            .cart-ftr { padding: 18px 20px; }
+            .cart-close { font-size: 32px; padding: 4px; }
+
+            /* Modal */
+            .modal-box { grid-template-columns: 1fr; max-height: 92vh; }
             .modal-img { display: none; }
-            .modal-info { padding: 36px 28px; }
-            .collection-header, #lookbook .lookbook-header, #instagram { padding-left: 24px; padding-right: 24px; }
-            #shop { padding-left: 0; padding-right: 0; }
-            .cart-btn { font-size: 9px; }
-            .hero-cta { flex-direction: column; align-items: center; }
-            .btn-primary, .btn-ghost { width: 100%; max-width: 280px; text-align: center; }
+            .modal-info { padding: 44px 24px 32px; }
+            .modal-close { font-size: 32px; top: 12px; right: 14px; padding: 6px; }
+            .modal-name { font-size: 36px; }
+            .modal-price { font-size: 24px; margin-bottom: 24px; }
+            .sz { width: 48px; height: 48px; font-size: 11px; }
+            .qty-btn { width: 44px; height: 44px; font-size: 20px; }
+            .qty-num { min-width: 52px; height: 44px; }
+
+            /* Sections padding */
+            .collection-header, #lookbook .lookbook-header, #instagram { padding-left: 20px; padding-right: 20px; }
+            .cart-btn { font-size: 9px; letter-spacing: 0.2em; }
+        }
+
+        /* ── RESPONSIVE 480px (teléfonos pequeños) ── */
+        @media (max-width: 480px) {
+            .hero-mascot { max-width: 72vw; }
+            .collection-title { font-size: clamp(52px, 16vw, 100px); }
+            .products-grid { grid-template-columns: 1fr; }
+            .products-grid .product-card:last-child { grid-column: span 1; }
+            .product-img-wrap { aspect-ratio: 4/5; }
+            .lookbook-grid { grid-template-columns: 1fr; }
+            .lk-item { min-height: 260px; }
+            .brand-content { padding: 40px 16px; }
+            .modal-info { padding: 40px 18px 28px; }
+            #instagram { padding: 60px 16px; }
+            .ig-sub { font-size: 10px; }
+            footer { padding: 40px 16px 28px; }
+            .cart-item { grid-template-columns: 64px 1fr auto; gap: 10px; }
+            .ci-thumb { width: 64px; height: 80px; }
         }
     </style>
 </head>

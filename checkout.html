@@ -159,13 +159,32 @@
         .ck-empty p { font-size: 11px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--gray-light); margin-bottom: 24px; }
         .ck-empty a { display: inline-block; padding: 14px 40px; background: var(--white); color: var(--black); font-size: 10px; letter-spacing: 0.28em; text-transform: uppercase; font-weight: 700; }
 
-        /* ── RESPONSIVE ── */
+        /* ── TOUCH ── */
+        @media (pointer: coarse) {
+            a, button { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+        }
+
+        /* ── RESPONSIVE 900px ── */
         @media (max-width: 900px) {
-            .ck-header { padding: 20px 24px; }
+            .ck-header { padding: 16px 20px; }
             .ck-main { grid-template-columns: 1fr; }
-            .ck-summary-col { order: -1; padding: 32px 24px 24px; }
-            .ck-form-col { padding: 32px 24px 80px; border-right: none; }
+            .ck-summary-col { order: -1; padding: 28px 20px 20px; }
+            .ck-form-col { padding: 28px 20px 80px; border-right: none; }
             .ck-row.cols2, .ck-row.cols3 { grid-template-columns: 1fr; }
+            .ck-section-title { font-size: 16px; }
+            .ck-field input, .ck-field select { padding: 13px 14px; font-size: 16px; }
+            .ck-pay-btn { padding: 18px; font-size: 11px; }
+        }
+
+        /* ── RESPONSIVE 480px ── */
+        @media (max-width: 480px) {
+            .ck-header { padding: 14px 16px; }
+            .ck-form-col { padding: 20px 16px 80px; }
+            .ck-summary-col { padding: 20px 16px 16px; }
+            .ck-item { gap: 10px; }
+            .ck-item-img { width: 52px; height: 65px; }
+            .ck-item-name { font-size: 11px; }
+            .ck-item-price { font-size: 17px; }
         }
     </style>
 </head>

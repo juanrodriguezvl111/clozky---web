@@ -1,0 +1,1232 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CLOZKY — Only For The Boss, Only For You</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --black: #000000;
+            --white: #ffffff;
+            --gray-dark: #0f0f0f;
+            --gray-mid: #1a1a1a;
+            --gray-light: #888888;
+            --red: #cc0000;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            background: var(--black);
+            color: var(--white);
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+            cursor: none;
+        }
+
+        /* ── CURSOR ── */
+        .cursor {
+            position: fixed;
+            width: 8px; height: 8px;
+            background: var(--white);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+            transition: transform 0.1s, background 0.2s;
+        }
+        .cursor-ring {
+            position: fixed;
+            width: 36px; height: 36px;
+            border: 1px solid rgba(255,255,255,0.4);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9998;
+            transform: translate(-50%, -50%);
+            transition: width 0.3s, height 0.3s, border-color 0.3s;
+        }
+        body:has(a:hover) .cursor-ring,
+        body:has(button:hover) .cursor-ring,
+        body:has(.product-card:hover) .cursor-ring { width: 60px; height: 60px; border-color: rgba(255,255,255,0.8); }
+
+        /* ── LOADER ── */
+        #loader {
+            position: fixed; inset: 0;
+            background: var(--black);
+            z-index: 10000;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+        }
+        .loader-word {
+            clip-path: inset(0 100% 0 0);
+            animation: loader-reveal 0.9s cubic-bezier(0.16,1,0.3,1) 0.3s forwards;
+        }
+        .loader-logo {
+            max-width: clamp(220px, 40vw, 560px);
+            width: 100%;
+            filter: brightness(0) invert(1);
+            object-fit: contain;
+            display: block;
+        }
+        .loader-logo-fallback {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: clamp(80px, 16vw, 220px);
+            letter-spacing: 0.08em;
+            line-height: 1;
+        }
+        .loader-sub {
+            font-size: 11px; letter-spacing: 0.45em;
+            color: var(--gray-light); text-transform: uppercase;
+            opacity: 0; margin-top: 20px;
+            animation: fade-in 0.6s ease 1s forwards;
+        }
+        .loader-line {
+            position: absolute; bottom: 0; left: 0;
+            height: 1px; background: var(--white);
+            width: 0;
+            animation: progress 1.6s cubic-bezier(0.16,1,0.3,1) 0.2s forwards;
+        }
+        @keyframes loader-reveal { to { clip-path: inset(0 0% 0 0); } }
+        @keyframes fade-in { to { opacity: 1; } }
+        @keyframes progress { to { width: 100%; } }
+
+        /* ── NAV ── */
+        nav {
+            position: fixed; top: 0; left: 0; right: 0;
+            z-index: 1000;
+            padding: 28px 48px;
+            display: flex; align-items: center; justify-content: space-between;
+            transition: padding 0.4s ease, background 0.4s ease, border 0.4s ease;
+        }
+        nav.scrolled {
+            padding: 16px 48px;
+            background: rgba(0,0,0,0.92);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+        .nav-logo {
+            text-decoration: none;
+            display: flex; align-items: center;
+            color: var(--white);
+        }
+        .nav-links { display: flex; gap: 40px; list-style: none; }
+        .nav-links a {
+            color: var(--white); text-decoration: none;
+            font-size: 10px; letter-spacing: 0.28em; text-transform: uppercase;
+            opacity: 0.7; transition: opacity 0.2s;
+        }
+        .nav-links a:hover { opacity: 1; }
+        .cart-btn {
+            display: flex; align-items: center; gap: 10px;
+            background: none; border: none; color: var(--white); cursor: none;
+            font-size: 10px; letter-spacing: 0.28em; text-transform: uppercase;
+            font-family: 'Inter', sans-serif;
+        }
+        .cart-count {
+            background: var(--red); color: var(--white);
+            width: 18px; height: 18px; border-radius: 50%;
+            font-size: 10px; font-weight: 700;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        /* ── HERO ── */
+        #hero {
+            min-height: 100vh;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            position: relative; overflow: hidden;
+            padding-top: 96px;   /* espacio para el nav fijo */
+            padding-bottom: 96px; /* espacio para el scroll-cue */
+        }
+        .hero-bg { display: none; }
+        .hero-noise {
+            position: absolute; inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+            opacity: 0.4; pointer-events: none;
+        }
+        .hero-vignette {
+            position: absolute; inset: 0;
+            background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.85) 100%);
+        }
+        .hero-content {
+            position: relative; z-index: 2;
+            text-align: center; padding: 0 24px;
+        }
+        .hero-eyebrow {
+            font-size: 10px; letter-spacing: 0.55em; text-transform: uppercase;
+            color: var(--gray-light); margin-bottom: 16px;
+            opacity: 0;
+            animation: fade-in 0.8s ease 2.2s forwards;
+        }
+        .hero-title {
+            clip-path: inset(0 0 100% 0);
+            animation: slide-up 1s cubic-bezier(0.16,1,0.3,1) 2s forwards;
+            display: flex; justify-content: center;
+        }
+        .hero-logo-img {
+            max-width: clamp(300px, 68vw, 880px);
+            width: 100%;
+            filter: brightness(0) invert(1);
+            object-fit: contain;
+            display: block;
+        }
+        .hero-logo-text {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: clamp(110px, 20vw, 300px);
+            line-height: 0.85; letter-spacing: 0.04em;
+        }
+        .hero-mascot {
+            max-width: clamp(260px, 42vw, 600px);
+            width: 100%;
+            filter: brightness(0) invert(1);
+            object-fit: contain;
+            display: block;
+            margin: 32px auto 0;
+            opacity: 0;
+            animation: fade-in 0.9s ease 2.5s forwards;
+        }
+        @keyframes slide-up { to { clip-path: inset(0 0 0% 0); } }
+        .hero-slogan {
+            font-size: 11px; letter-spacing: 0.42em; text-transform: uppercase;
+            color: var(--gray-light); margin-top: 20px;
+            opacity: 0;
+            animation: fade-in 0.8s ease 2.4s forwards;
+        }
+        .hero-cta {
+            margin-top: 32px;
+            display: flex; gap: 16px; justify-content: center;
+            opacity: 0;
+            animation: fade-in 0.8s ease 2.6s forwards;
+        }
+        .btn-primary {
+            background: var(--white); color: var(--black);
+            padding: 15px 44px;
+            font-size: 10px; letter-spacing: 0.32em; text-transform: uppercase;
+            text-decoration: none; font-weight: 700;
+            border: 1px solid var(--white);
+            transition: background 0.3s, color 0.3s;
+        }
+        .btn-primary:hover { background: transparent; color: var(--white); }
+        .btn-ghost {
+            background: transparent; color: var(--white);
+            padding: 15px 44px;
+            font-size: 10px; letter-spacing: 0.32em; text-transform: uppercase;
+            text-decoration: none; font-weight: 600;
+            border: 1px solid rgba(255,255,255,0.25);
+            transition: border-color 0.3s;
+        }
+        .btn-ghost:hover { border-color: var(--white); }
+        .scroll-cue {
+            position: absolute; bottom: 40px; left: 50%;
+            transform: translateX(-50%);
+            display: flex; flex-direction: column; align-items: center; gap: 10px;
+            opacity: 0;
+            animation: fade-in 0.8s ease 3s forwards;
+        }
+        .scroll-cue span {
+            font-size: 9px; letter-spacing: 0.45em; color: var(--gray-light); text-transform: uppercase;
+        }
+        .scroll-line {
+            width: 1px; height: 48px; background: var(--gray-light);
+            transform-origin: top;
+            animation: scroll-line 1.8s ease infinite 3.2s;
+        }
+        @keyframes scroll-line {
+            0% { transform: scaleY(0); opacity: 1; }
+            100% { transform: scaleY(1); opacity: 0; }
+        }
+
+        /* ── MARQUEE ── */
+        .marquee-wrap {
+            padding: 18px 0; overflow: hidden;
+            border-top: 1px solid rgba(255,255,255,0.08);
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+        .marquee-track {
+            display: flex; gap: 0; white-space: nowrap;
+            animation: marquee 22s linear infinite;
+        }
+        .marquee-chunk {
+            display: inline-flex; align-items: center; gap: 28px; padding-right: 28px;
+        }
+        .marquee-chunk span {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 17px; letter-spacing: 0.22em; color: var(--gray-light);
+        }
+        .marquee-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--red); flex-shrink: 0; }
+        @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-33.333%); } }
+
+        /* ── COLLECTION HEADER ── */
+        .collection-header { padding: 130px 48px 80px; text-align: center; }
+        .collection-label {
+            font-size: 10px; letter-spacing: 0.55em; text-transform: uppercase;
+            color: var(--red); margin-bottom: 24px; display: block;
+        }
+        .collection-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: clamp(64px, 13vw, 180px);
+            line-height: 0.88; letter-spacing: 0.02em;
+        }
+        .collection-title .line { display: block; overflow: hidden; }
+        .collection-title .inner {
+            display: block;
+            transform: translateY(110%);
+            transition: transform 0.9s cubic-bezier(0.16,1,0.3,1);
+        }
+        .collection-title .line.visible .inner { transform: translateY(0); }
+        .collection-desc {
+            max-width: 440px; margin: 40px auto 0;
+            font-size: 14px; line-height: 1.9;
+            color: var(--gray-light); font-weight: 300;
+        }
+
+        /* ── PRODUCTS ── */
+        #shop { padding: 0 2px 140px; }
+        .products-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px;
+            max-width: 100%;
+        }
+        .product-card {
+            position: relative; overflow: hidden;
+            cursor: none; background: var(--gray-dark);
+            opacity: 0; transform: translateY(48px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+        .product-card.visible { opacity: 1; transform: translateY(0); }
+
+        .product-img-wrap {
+            width: 100%; aspect-ratio: 3/4; overflow: hidden;
+            position: relative; background: var(--gray-mid);
+        }
+        .product-img-wrap img {
+            width: 100%; height: 100%; object-fit: cover; display: block;
+            transition: transform 0.7s cubic-bezier(0.25,0.46,0.45,0.94);
+        }
+        .product-card:hover .product-img-wrap img { transform: scale(1.06); }
+
+        .product-placeholder {
+            width: 100%; aspect-ratio: 3/4;
+            background: var(--gray-mid);
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center; gap: 14px;
+            transition: background 0.3s;
+        }
+        .product-card:hover .product-placeholder { background: #222; }
+        .product-placeholder .ph-icon { opacity: 0.2; }
+        .product-placeholder span {
+            font-size: 9px; letter-spacing: 0.2em; color: #3a3a3a; text-transform: uppercase;
+        }
+
+        .product-hover-layer {
+            position: absolute; inset: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.88) 0%, transparent 55%);
+            opacity: 0; transition: opacity 0.35s ease;
+            display: flex; align-items: flex-end; padding: 28px;
+        }
+        .product-card:hover .product-hover-layer { opacity: 1; }
+
+        .quick-add {
+            width: 100%; padding: 13px;
+            background: var(--white); color: var(--black);
+            border: none; cursor: none;
+            font-family: 'Inter', sans-serif;
+            font-size: 10px; letter-spacing: 0.28em; text-transform: uppercase; font-weight: 700;
+            transition: background 0.25s, color 0.25s;
+        }
+        .quick-add:hover { background: var(--red); color: var(--white); }
+
+        .product-badge {
+            position: absolute; top: 16px; left: 16px;
+            background: var(--red); color: var(--white);
+            font-size: 9px; letter-spacing: 0.22em; font-weight: 700;
+            padding: 4px 10px; text-transform: uppercase;
+        }
+        .product-info {
+            padding: 18px 20px 24px;
+            display: flex; justify-content: space-between; align-items: flex-start;
+        }
+        .product-name {
+            font-size: 12px; font-weight: 600;
+            letter-spacing: 0.08em; text-transform: uppercase;
+        }
+        .product-sub {
+            font-size: 10px; color: var(--gray-light);
+            letter-spacing: 0.18em; text-transform: uppercase; margin-top: 4px;
+        }
+        .product-price {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 22px; letter-spacing: 0.04em; white-space: nowrap;
+        }
+
+        /* ── BRAND STORY ── */
+        #brand { display: grid; grid-template-columns: 1fr 1fr; min-height: 88vh; }
+        .brand-visual { position: relative; overflow: hidden; background: var(--gray-dark); }
+        .brand-visual img {
+            width: 100%; height: 100%; object-fit: cover; display: block;
+            transition: transform 0.7s ease;
+        }
+        .brand-visual:hover img { transform: scale(1.04); }
+        .brand-visual-placeholder {
+            width: 100%; height: 100%; min-height: 520px;
+            display: flex; align-items: center; justify-content: center;
+            flex-direction: column; gap: 12px;
+        }
+        .brand-visual-placeholder span {
+            font-size: 9px; letter-spacing: 0.2em; color: #2a2a2a; text-transform: uppercase;
+        }
+        .brand-content {
+            background: var(--gray-dark);
+            padding: 80px 64px;
+            display: flex; flex-direction: column; justify-content: center;
+        }
+        .brand-label {
+            font-size: 10px; letter-spacing: 0.52em; text-transform: uppercase;
+            color: var(--red); margin-bottom: 32px;
+        }
+        .brand-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: clamp(40px, 5.5vw, 80px);
+            line-height: 0.92; letter-spacing: 0.04em; margin-bottom: 36px;
+        }
+        .brand-text {
+            font-size: 14px; line-height: 2.1;
+            color: var(--gray-light); font-weight: 300; margin-bottom: 48px;
+        }
+        .brand-text strong { color: var(--white); font-weight: 500; }
+
+        /* ── LOOKBOOK ── */
+        #lookbook { border-top: 1px solid rgba(255,255,255,0.06); }
+        .lookbook-header { padding: 80px 48px 48px; text-align: center; }
+        .lookbook-header h2 {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: clamp(44px, 8vw, 110px); letter-spacing: 0.04em;
+        }
+        .lookbook-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 2px; height: 90vh;
+        }
+        .lk-item { overflow: hidden; background: var(--gray-dark); position: relative; }
+        .lk-item.span2 { grid-row: span 2; }
+        .lk-item img {
+            width: 100%; height: 100%; object-fit: cover; display: block;
+            transition: transform 0.7s ease;
+        }
+        .lk-item:hover img { transform: scale(1.05); }
+        .lk-placeholder {
+            width: 100%; height: 100%;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center; gap: 10px;
+        }
+        .lk-placeholder span {
+            font-size: 9px; letter-spacing: 0.18em; color: #272727; text-transform: uppercase;
+        }
+
+        /* ── INSTAGRAM ── */
+        #instagram {
+            padding: 140px 48px;
+            text-align: center;
+            border-top: 1px solid rgba(255,255,255,0.06);
+            position: relative; overflow: hidden;
+        }
+        .ig-bg {
+            position: absolute; inset: 0;
+            background: radial-gradient(ellipse at center, rgba(204,0,0,0.04) 0%, transparent 70%);
+        }
+        .ig-label {
+            font-size: 10px; letter-spacing: 0.5em; text-transform: uppercase;
+            color: var(--gray-light); display: block; margin-bottom: 24px;
+        }
+        .ig-handle {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: clamp(44px, 9vw, 120px);
+            letter-spacing: 0.04em; display: block;
+            color: var(--white); text-decoration: none;
+            transition: color 0.3s;
+            position: relative;
+        }
+        .ig-handle::after {
+            content: '';
+            position: absolute; bottom: -4px; left: 50%; right: 50%;
+            height: 2px; background: var(--red);
+            transition: left 0.4s ease, right 0.4s ease;
+        }
+        .ig-handle:hover::after { left: 0; right: 0; }
+        .ig-sub {
+            font-size: 11px; letter-spacing: 0.35em; text-transform: uppercase;
+            color: var(--gray-light); margin-top: 28px;
+        }
+        .ig-arrow {
+            margin-top: 48px; display: inline-block;
+            font-size: 10px; letter-spacing: 0.35em; text-transform: uppercase;
+            color: var(--white); text-decoration: none;
+            border-bottom: 1px solid rgba(255,255,255,0.25); padding-bottom: 6px;
+            transition: border-color 0.3s;
+        }
+        .ig-arrow:hover { border-color: var(--white); }
+
+        /* ── FOOTER ── */
+        footer {
+            padding: 72px 48px 48px;
+            border-top: 1px solid rgba(255,255,255,0.06);
+            display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 48px;
+        }
+        .footer-logo {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 40px; letter-spacing: 0.16em;
+            display: block; margin-bottom: 16px;
+        }
+        .footer-tagline {
+            font-size: 12px; color: var(--gray-light); line-height: 1.9; max-width: 200px;
+        }
+        .footer-col h4 {
+            font-size: 9px; letter-spacing: 0.4em; text-transform: uppercase;
+            color: var(--gray-light); margin-bottom: 22px;
+        }
+        .footer-col ul { list-style: none; }
+        .footer-col ul li { margin-bottom: 13px; }
+        .footer-col ul li a {
+            color: var(--white); text-decoration: none;
+            font-size: 13px; opacity: 0.8; transition: opacity 0.2s;
+        }
+        .footer-col ul li a:hover { opacity: 1; }
+        .footer-bottom {
+            padding: 24px 48px;
+            border-top: 1px solid rgba(255,255,255,0.04);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .footer-bottom p { font-size: 11px; color: #3a3a3a; letter-spacing: 0.1em; }
+
+        /* ── CART SIDEBAR ── */
+        .cart-sidebar {
+            position: fixed; top: 0; right: -440px; width: 440px; height: 100vh;
+            background: var(--gray-dark);
+            border-left: 1px solid rgba(255,255,255,0.08);
+            z-index: 2000; display: flex; flex-direction: column;
+            transition: right 0.45s cubic-bezier(0.25,0.46,0.45,0.94);
+        }
+        .cart-sidebar.open { right: 0; }
+        .cart-hdr {
+            padding: 24px 28px;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .cart-hdr h3 { font-size: 11px; letter-spacing: 0.3em; text-transform: uppercase; }
+        .cart-close {
+            background: none; border: none; color: var(--white);
+            font-size: 28px; cursor: none; line-height: 1; opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+        .cart-close:hover { opacity: 1; }
+        .cart-body { flex: 1; overflow-y: auto; padding: 28px; }
+        .cart-empty { text-align: center; padding: 64px 0; }
+        .cart-empty p { font-size: 11px; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gray-light); }
+        .cart-item {
+            display: grid; grid-template-columns: 72px 1fr auto; gap: 16px;
+            padding: 18px 0; border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .ci-thumb {
+            width: 72px; height: 90px; object-fit: cover;
+            background: var(--gray-mid);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .ci-name { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 6px; }
+        .ci-detail { font-size: 10px; color: var(--gray-light); }
+        .ci-price { font-family: 'Bebas Neue', sans-serif; font-size: 20px; align-self: start; }
+        .cart-ftr {
+            padding: 24px 28px;
+            border-top: 1px solid rgba(255,255,255,0.08);
+        }
+        .cart-total-row {
+            display: flex; justify-content: space-between; align-items: baseline;
+            margin-bottom: 20px;
+        }
+        .cart-total-row span { font-size: 11px; letter-spacing: 0.25em; text-transform: uppercase; }
+        .cart-total-price { font-family: 'Bebas Neue', sans-serif; font-size: 26px; }
+        .checkout-btn {
+            width: 100%; padding: 16px;
+            background: var(--white); color: var(--black);
+            border: none; cursor: none;
+            font-family: 'Inter', sans-serif;
+            font-size: 10px; letter-spacing: 0.32em; text-transform: uppercase; font-weight: 700;
+            margin-bottom: 14px;
+            transition: background 0.3s, color 0.3s;
+        }
+        .checkout-btn:hover { background: var(--red); color: var(--white); }
+        .checkout-note { font-size: 9px; letter-spacing: 0.2em; text-align: center; color: var(--gray-light); text-transform: uppercase; }
+
+        /* ── MODAL ── */
+        .dim {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.75);
+            z-index: 1999; opacity: 0; pointer-events: none; transition: opacity 0.3s;
+        }
+        .dim.on { opacity: 1; pointer-events: all; }
+        .product-modal {
+            position: fixed; inset: 0; z-index: 3000;
+            display: flex; align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.35s;
+            padding: 24px;
+        }
+        .product-modal.open { opacity: 1; pointer-events: all; }
+        .modal-box {
+            background: var(--gray-dark);
+            max-width: 880px; width: 100%; max-height: 88vh;
+            overflow-y: auto; position: relative;
+            display: grid; grid-template-columns: 1fr 1fr;
+        }
+        .modal-close {
+            position: absolute; top: 18px; right: 22px;
+            background: none; border: none; color: var(--white);
+            font-size: 28px; cursor: none; z-index: 5; line-height: 1; opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+        .modal-close:hover { opacity: 1; }
+        .modal-img { background: var(--gray-mid); min-height: 480px; position: relative; }
+        .modal-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .modal-view-tabs {
+            position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%);
+            display: flex; gap: 4px; z-index: 2;
+        }
+        .modal-view-tab {
+            background: rgba(0,0,0,0.72); border: 1px solid rgba(255,255,255,0.22);
+            color: rgba(255,255,255,0.55); font-family: 'Inter', sans-serif;
+            font-size: 9px; letter-spacing: 0.3em; text-transform: uppercase;
+            padding: 7px 18px; cursor: none; transition: all 0.2s;
+        }
+        .modal-view-tab.active, .modal-view-tab:hover {
+            background: var(--white); color: var(--black); border-color: var(--white);
+        }
+        .modal-img-placeholder {
+            width: 100%; height: 100%; min-height: 480px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
+        }
+        .modal-img-placeholder span { font-size: 9px; letter-spacing: 0.2em; color: #2a2a2a; text-transform: uppercase; }
+        .modal-info { padding: 52px 44px; }
+        .modal-collection { font-size: 9px; letter-spacing: 0.45em; color: var(--red); text-transform: uppercase; margin-bottom: 14px; }
+        .modal-name { font-family: 'Bebas Neue', sans-serif; font-size: 44px; letter-spacing: 0.04em; line-height: 1; margin-bottom: 10px; }
+        .modal-price { font-family: 'Bebas Neue', sans-serif; font-size: 30px; margin-bottom: 36px; }
+        .size-label { font-size: 9px; letter-spacing: 0.35em; text-transform: uppercase; color: var(--gray-light); margin-bottom: 14px; }
+        .sizes { display: flex; gap: 8px; margin-bottom: 32px; }
+        .sz {
+            width: 38px; height: 38px; background: transparent;
+            border: 1px solid rgba(255,255,255,0.18); color: var(--white);
+            font-size: 10px; letter-spacing: 0.1em; cursor: none;
+            font-family: 'Inter', sans-serif; transition: all 0.2s;
+        }
+        .sz:hover, .sz.active { background: var(--white); color: var(--black); border-color: var(--white); }
+        .modal-desc { font-size: 13px; line-height: 2; color: var(--gray-light); margin-bottom: 32px; }
+
+        /* ── REVEAL UTILS ── */
+        .reveal {
+            opacity: 0; transform: translateY(44px);
+            transition: opacity 0.85s ease, transform 0.85s ease;
+        }
+        .reveal.visible { opacity: 1; transform: translateY(0); }
+        .reveal-left {
+            opacity: 0; transform: translateX(-44px);
+            transition: opacity 0.85s ease, transform 0.85s ease;
+        }
+        .reveal-left.visible { opacity: 1; transform: translateX(0); }
+
+        /* ── LOGO IMG ── */
+        .nav-logo { text-decoration: none; display: flex; align-items: center; }
+        .nav-logo-img { height: 34px; filter: brightness(0) invert(1); object-fit: contain; display: block; }
+        .nav-logo-fallback {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 26px; letter-spacing: 0.18em; color: var(--white);
+        }
+        .footer-logo-img { height: 52px; filter: brightness(0) invert(1); object-fit: contain; display: block; margin-bottom: 16px; }
+        .footer-logo-fallback {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 40px; letter-spacing: 0.16em; display: block; margin-bottom: 16px;
+        }
+
+        /* ── SCROLLBAR ── */
+        ::-webkit-scrollbar { width: 2px; }
+        ::-webkit-scrollbar-track { background: var(--black); }
+        ::-webkit-scrollbar-thumb { background: #2a2a2a; }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 900px) {
+            nav { padding: 20px 24px; }
+            nav.scrolled { padding: 14px 24px; }
+            .nav-links { display: none; }
+            .products-grid { grid-template-columns: 1fr 1fr; }
+            .products-grid .product-card:last-child { grid-column: span 2; }
+            #brand { grid-template-columns: 1fr; }
+            .brand-visual { min-height: 56vw; }
+            .brand-content { padding: 60px 28px; }
+            .lookbook-grid { grid-template-columns: 1fr 1fr; grid-template-rows: auto; height: auto; }
+            .lk-item.span2 { grid-row: span 1; }
+            .lk-placeholder { min-height: 220px; }
+            footer { grid-template-columns: 1fr; padding: 48px 24px 32px; }
+            .footer-bottom { flex-direction: column; gap: 10px; text-align: center; padding: 20px 24px; }
+            .cart-sidebar { width: 100%; right: -100%; }
+            .modal-box { grid-template-columns: 1fr; }
+            .modal-img { display: none; }
+            .collection-header, #lookbook .lookbook-header, #instagram { padding-left: 24px; padding-right: 24px; }
+            #shop { padding-left: 0; padding-right: 0; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Cursor -->
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursor-ring"></div>
+
+<!-- Loader -->
+<div id="loader">
+    <div class="loader-word">
+        <img src="assets/mascot.png" alt="CLOZKY" class="loader-logo"
+            onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+        <span class="loader-logo-fallback" style="display:none">CLOZKY</span>
+    </div>
+    <div class="loader-sub">High End Streetwear · Colombia</div>
+    <div class="loader-line"></div>
+</div>
+
+<!-- Dim overlay -->
+<div class="dim" id="dim" onclick="closeDim()"></div>
+
+<!-- Cart Sidebar -->
+<div class="cart-sidebar" id="cart-sidebar">
+    <div class="cart-hdr">
+        <h3>Tu Bolsa</h3>
+        <button class="cart-close" onclick="closeCart()">×</button>
+    </div>
+    <div class="cart-body" id="cart-body">
+        <div class="cart-empty"><p>Tu bolsa está vacía</p></div>
+    </div>
+    <div class="cart-ftr" id="cart-ftr" style="display:none">
+        <div class="cart-total-row">
+            <span>Total</span>
+            <span class="cart-total-price" id="cart-total">$0</span>
+        </div>
+        <button class="checkout-btn" onclick="goCheckout()">Pedir por Instagram DM</button>
+        <p class="checkout-note">Tu pedido se confirma vía @clozkystudios</p>
+    </div>
+</div>
+
+<!-- Product Modal -->
+<div class="product-modal" id="prod-modal">
+    <div class="modal-box">
+        <button class="modal-close" onclick="closeModal()">×</button>
+        <div class="modal-img" id="modal-img-wrap">
+            <div class="modal-img-placeholder">
+                <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#2a2a2a" stroke-width="1.2"><rect x="3" y="3" width="18" height="18" rx="1"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                <span>Imagen del producto</span>
+            </div>
+        </div>
+        <div class="modal-info">
+            <p class="modal-collection">Saints or Sinners — 001</p>
+            <h2 class="modal-name" id="modal-name">—</h2>
+            <p class="modal-price" id="modal-price">—</p>
+            <p class="size-label">Selecciona tu talla</p>
+            <div class="sizes">
+                <button class="sz" onclick="pickSize(this)">XS</button>
+                <button class="sz" onclick="pickSize(this)">S</button>
+                <button class="sz" onclick="pickSize(this)">M</button>
+                <button class="sz" onclick="pickSize(this)">L</button>
+                <button class="sz" onclick="pickSize(this)">XL</button>
+                <button class="sz" onclick="pickSize(this)">XXL</button>
+            </div>
+            <p class="modal-desc">Tee oversized de alta calidad. Serigrafía premium. 100% algodón 240g. Parte de la primera cápsula de Clozky Studios.</p>
+            <button class="quick-add" style="cursor:none" onclick="addFromModal()">Añadir a la Bolsa</button>
+        </div>
+    </div>
+</div>
+
+<!-- NAV -->
+<nav id="nav">
+    <a href="#" class="nav-logo">
+        <img src="assets/logo.png" alt="CLOZKY" class="nav-logo-img"
+            onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+        <span class="nav-logo-fallback" style="display:none">CLOZKY</span>
+    </a>
+    <ul class="nav-links">
+        <li><a href="#shop">Tienda</a></li>
+        <li><a href="#brand">Nosotros</a></li>
+        <li><a href="#lookbook">Lookbook</a></li>
+        <li><a href="#instagram">Instagram</a></li>
+    </ul>
+    <button class="cart-btn" onclick="openCart()">
+        Bolsa <span class="cart-count" id="cart-count">0</span>
+    </button>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+    <div class="hero-bg" id="hero-bg"></div>
+    <div class="hero-noise"></div>
+    <div class="hero-vignette"></div>
+    <div class="hero-content">
+        <p class="hero-eyebrow">Primera Cápsula · 2026</p>
+        <h1 class="hero-title">
+            <img src="assets/logo.png" alt="CLOZKY" class="hero-logo-img"
+                onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+            <span class="hero-logo-text" style="display:none">CLOZKY</span>
+        </h1>
+        <p class="hero-slogan">Only For The Boss &nbsp;·&nbsp; Only For You</p>
+        <div class="hero-cta">
+            <a href="#shop" class="btn-primary">Shop Now</a>
+            <a href="https://www.instagram.com/clozkystudios" target="_blank" class="btn-ghost">@clozkystudios</a>
+        </div>
+    </div>
+    <div class="scroll-cue">
+        <span>Scroll</span>
+        <div class="scroll-line"></div>
+    </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-wrap">
+    <div class="marquee-track" id="marquee-track">
+        <!-- 3 identical chunks for seamless infinite loop -->
+        <div class="marquee-chunk">
+            <span>Saints or Sinners</span><div class="marquee-dot"></div>
+            <span>Only For The Boss</span><div class="marquee-dot"></div>
+            <span>Only For You</span><div class="marquee-dot"></div>
+            <span>Clozky Studios</span><div class="marquee-dot"></div>
+            <span>High End Streetwear</span><div class="marquee-dot"></div>
+            <span>Colombia</span><div class="marquee-dot"></div>
+        </div>
+        <div class="marquee-chunk">
+            <span>Saints or Sinners</span><div class="marquee-dot"></div>
+            <span>Only For The Boss</span><div class="marquee-dot"></div>
+            <span>Only For You</span><div class="marquee-dot"></div>
+            <span>Clozky Studios</span><div class="marquee-dot"></div>
+            <span>High End Streetwear</span><div class="marquee-dot"></div>
+            <span>Colombia</span><div class="marquee-dot"></div>
+        </div>
+        <div class="marquee-chunk">
+            <span>Saints or Sinners</span><div class="marquee-dot"></div>
+            <span>Only For The Boss</span><div class="marquee-dot"></div>
+            <span>Only For You</span><div class="marquee-dot"></div>
+            <span>Clozky Studios</span><div class="marquee-dot"></div>
+            <span>High End Streetwear</span><div class="marquee-dot"></div>
+            <span>Colombia</span><div class="marquee-dot"></div>
+        </div>
+    </div>
+</div>
+
+<!-- COLLECTION HEADER -->
+<section class="collection-header">
+    <span class="collection-label reveal">Cápsula 001</span>
+    <h2 class="collection-title">
+        <span class="line"><span class="inner">SAINTS</span></span>
+        <span class="line"><span class="inner">OR</span></span>
+        <span class="line"><span class="inner">SINNERS</span></span>
+    </h2>
+    <p class="collection-desc reveal">
+        Nuestra primera cápsula. Una exploración entre lo sagrado y lo condenado. Cada prenda es una declaración, no sólo una compra.
+    </p>
+</section>
+
+<!-- PRODUCTS -->
+<section id="shop">
+    <div class="products-grid">
+
+        <!-- Producto 1: WORTHLESS SACRIFICE -->
+        <div class="product-card" onclick="openProduct(1)">
+            <div class="product-badge">Limited</div>
+            <div class="product-img-wrap">
+                <img src="assets/product1.jpg" alt="WORTHLESS SACRIFICE" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                <div class="product-placeholder" style="display:none">
+                    <svg class="ph-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="0.8"><rect x="3" y="3" width="18" height="18" rx="1"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                    <span>assets/product1.jpg</span>
+                </div>
+            </div>
+            <div class="product-hover-layer">
+                <button class="quick-add" onclick="event.stopPropagation(); addProductToCart(1)">Add to Bag</button>
+            </div>
+            <div class="product-info">
+                <div>
+                    <p class="product-name">Worthless Sacrifice</p>
+                    <p class="product-sub">Saints or Sinners — 001</p>
+                </div>
+                <p class="product-price">$260.000</p>
+            </div>
+        </div>
+
+        <!-- Producto 2: NO GRACE -->
+        <div class="product-card" style="transition-delay:0.12s" onclick="openProduct(2)">
+            <div class="product-badge" style="background:#1a1a1a;border:1px solid rgba(255,255,255,0.15)">New</div>
+            <div class="product-img-wrap">
+                <img src="assets/product2.jpg" alt="NO GRACE" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                <div class="product-placeholder" style="display:none">
+                    <svg class="ph-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="0.8"><rect x="3" y="3" width="18" height="18" rx="1"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                    <span>assets/product2.jpg</span>
+                </div>
+            </div>
+            <div class="product-hover-layer">
+                <button class="quick-add" onclick="event.stopPropagation(); addProductToCart(2)">Add to Bag</button>
+            </div>
+            <div class="product-info">
+                <div>
+                    <p class="product-name">No Grace</p>
+                    <p class="product-sub">Saints or Sinners — 001</p>
+                </div>
+                <p class="product-price">$220.000</p>
+            </div>
+        </div>
+
+        <!-- Producto 3: DEVIL'S F*CKING EVIL -->
+        <div class="product-card" style="transition-delay:0.24s" onclick="openProduct(3)">
+            <div class="product-badge" style="background:#1a1a1a;border:1px solid rgba(255,255,255,0.15)">New</div>
+            <div class="product-img-wrap">
+                <img src="assets/product3.jpg" alt="DEVIL'S F*CKING EVIL" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                <div class="product-placeholder" style="display:none">
+                    <svg class="ph-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="0.8"><rect x="3" y="3" width="18" height="18" rx="1"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                    <span>assets/product3.jpg</span>
+                </div>
+            </div>
+            <div class="product-hover-layer">
+                <button class="quick-add" onclick="event.stopPropagation(); addProductToCart(3)">Add to Bag</button>
+            </div>
+            <div class="product-info">
+                <div>
+                    <p class="product-name">Devil's F*cking Evil</p>
+                    <p class="product-sub">Saints or Sinners — 001</p>
+                </div>
+                <p class="product-price">$240.000</p>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<!-- BRAND STORY -->
+<section id="brand">
+    <div class="brand-visual">
+        <img src="assets/storefront.jpg" alt="Clozky Store" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="brand-visual-placeholder" style="display:none">
+            <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#2a2a2a" stroke-width="1.2"><rect x="3" y="3" width="18" height="18" rx="1"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            <span>assets/storefront.jpg</span>
+        </div>
+    </div>
+    <div class="brand-content">
+        <p class="brand-label reveal-left">Quiénes Somos</p>
+        <h2 class="brand-title reveal-left" style="transition-delay:0.1s">NO ES SOLO<br>TELA<br>ES UN<br>ESTILO DE VIDA</h2>
+        <p class="brand-text reveal-left" style="transition-delay:0.2s">
+            Clozky nació para los que les gusta lo escaso.<br><br>
+            Hecho para los que entienden el beneficio de la exclusividad — No apto para NPCS </strong>.<br><br>
+            Llevamos la cultura de la calle a la piel del que tiene el mando, si no eres quien da las ordenes, no eres apto.
+        </p>
+        <a href="https://www.instagram.com/clozkystudios" target="_blank" class="btn-primary reveal-left" style="display:inline-block; transition-delay:0.3s">Síguenos en Instagram</a>
+    </div>
+</section>
+
+<!-- LOOKBOOK -->
+<section id="lookbook">
+    <div class="lookbook-header">
+        <h2 class="reveal">Lookbook</h2>
+    </div>
+    <div class="lookbook-grid">
+        <div class="lk-item span2">
+            <img src="assets/lookbook1.jpg" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+            <div class="lk-placeholder" style="display:none; background:#0d0d0d">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#222" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="1"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                <span>assets/lookbook1.jpg</span>
+            </div>
+        </div>
+        <div class="lk-item">
+            <img src="assets/lookbook2.jpg" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+            <div class="lk-placeholder" style="display:none; background:#111">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#222" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="1"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                <span>assets/lookbook2.jpg</span>
+            </div>
+        </div>
+        <div class="lk-item">
+            <img src="assets/lookbook3.jpg" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+            <div class="lk-placeholder" style="display:none; background:#0a0a0a">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#222" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="1"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                <span>assets/lookbook3.jpg</span>
+            </div>
+        </div>
+        <div class="lk-item">
+            <img src="assets/lookbook4.jpg" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+            <div class="lk-placeholder" style="display:none; background:#111">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#222" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="1"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                <span>assets/lookbook4.jpg</span>
+            </div>
+        </div>
+        <div class="lk-item">
+            <img src="assets/lookbook5.jpg" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+            <div class="lk-placeholder" style="display:none; background:#0d0d0d">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#222" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="1"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                <span>assets/lookbook5.jpg</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- INSTAGRAM -->
+<section id="instagram">
+    <div class="ig-bg"></div>
+    <span class="ig-label reveal">Síguenos</span>
+    <a href="https://www.instagram.com/clozkystudios" target="_blank" class="ig-handle reveal" style="transition-delay:0.1s">@clozkystudios</a>
+    <p class="ig-sub reveal" style="transition-delay:0.2s">Nuevas piezas · Drops exclusivos · Comunidad</p>
+    <a href="https://www.instagram.com/clozkystudios" target="_blank" class="ig-arrow reveal" style="transition-delay:0.3s">Ver perfil →</a>
+</section>
+
+<!-- FOOTER -->
+<footer>
+    <div>
+        <img src="assets/logo.png" alt="CLOZKY" class="footer-logo-img"
+            onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+        <span class="footer-logo-fallback" style="display:none">CLOZKY</span>
+        <p class="footer-tagline">High End Streetwear.<br>Only for the boss,<br>only for you.</p>
+    </div>
+    <div class="footer-col">
+        <h4>Navegación</h4>
+        <ul>
+            <li><a href="#shop">Tienda</a></li>
+            <li><a href="#brand">Nosotros</a></li>
+            <li><a href="#lookbook">Lookbook</a></li>
+        </ul>
+    </div>
+    <div class="footer-col">
+        <h4>Contacto</h4>
+        <ul>
+            <li><a href="https://www.instagram.com/clozkystudios" target="_blank">@clozkystudios</a></li>
+            <li><a href="https://www.instagram.com/clozkystudios" target="_blank">Pedidos por DM</a></li>
+        </ul>
+    </div>
+</footer>
+<div class="footer-bottom">
+    <p>© 2026 Clozky Studios. Todos los derechos reservados.</p>
+    <p>Colombia · High End Streetwear</p>
+</div>
+
+<script>
+    /* ── CURSOR ── */
+    const cur = document.getElementById('cursor');
+    const ring = document.getElementById('cursor-ring');
+    let mx = 0, my = 0, rx = 0, ry = 0;
+    document.addEventListener('mousemove', e => {
+        mx = e.clientX; my = e.clientY;
+        cur.style.left = mx + 'px'; cur.style.top = my + 'px';
+    });
+    (function animRing() {
+        rx += (mx - rx) * 0.13; ry += (my - ry) * 0.13;
+        ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
+        requestAnimationFrame(animRing);
+    })();
+
+    /* ── LOADER ── */
+    window.addEventListener('load', () => {
+        setTimeout(() => {
+            const ldr = document.getElementById('loader');
+            ldr.style.transition = 'opacity 0.7s ease';
+            ldr.style.opacity = '0';
+            setTimeout(() => ldr.remove(), 700);
+        }, 2000);
+    });
+
+    /* ── NAV ── */
+    const nav = document.getElementById('nav');
+    window.addEventListener('scroll', () => nav.classList.toggle('scrolled', scrollY > 60), { passive: true });
+
+    /* ── HERO PARALLAX ── */
+    const heroBg = document.getElementById('hero-bg');
+    window.addEventListener('scroll', () => {
+        heroBg.style.transform = `translateY(${scrollY * 0.3}px)`;
+    }, { passive: true });
+
+    /* ── SCROLL REVEALS ── */
+    const io = new IntersectionObserver(entries => {
+        entries.forEach(e => {
+            if (e.isIntersecting) {
+                const d = parseInt(e.target.dataset.delay || 0);
+                setTimeout(() => e.target.classList.add('visible'), d);
+            }
+        });
+    }, { threshold: 0.12 });
+
+    document.querySelectorAll('.reveal, .reveal-left').forEach(el => io.observe(el));
+
+    /* Collection title lines */
+    const lineObs = new IntersectionObserver(entries => {
+        entries.forEach(e => {
+            if (e.isIntersecting) {
+                e.target.querySelectorAll('.line').forEach((ln, i) => {
+                    setTimeout(() => ln.classList.add('visible'), i * 120);
+                });
+            }
+        });
+    }, { threshold: 0.2 });
+    document.querySelectorAll('.collection-title').forEach(t => lineObs.observe(t));
+
+    /* Product cards */
+    const cardObs = new IntersectionObserver(entries => {
+        entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.product-card').forEach(c => cardObs.observe(c));
+
+    /* ── PRODUCT CATALOG ── */
+    const PRODUCTS = {
+        1: {
+            name: 'WORTHLESS SACRIFICE', displayPrice: '$260.000', price: 260000,
+            imgs:   ['assets/product1.jpg',  'assets/product1b.jpg'],
+            labels: ['FRONT',               'LOOK'],
+        },
+        2: {
+            name: 'NO GRACE', displayPrice: '$220.000', price: 220000,
+            imgs:   ['assets/product2.jpg',  'assets/product2b.jpg',  'assets/product2c.jpg',  'assets/product2d.jpg'],
+            labels: ['FRONT',               'BACK',                  'LOOK FRONT',            'LOOK BACK'],
+        },
+        3: {
+            name: "DEVIL'S F*CKING EVIL", displayPrice: '$240.000', price: 240000,
+            imgs:   ['assets/product3.jpg',  'assets/product3b.jpg',  'assets/product3c.jpg',  'assets/product3d.jpg'],
+            labels: ['FRONT',               'BACK',                  'LOOK FRONT',            'LOOK BACK'],
+        },
+    };
+
+    let activeProductId = null;
+
+    function openProduct(id) {
+        activeProductId = id;
+        const p = PRODUCTS[id];
+        openModal(p.name, p.displayPrice, p.imgs, p.price);
+    }
+    function addProductToCart(id) {
+        const p = PRODUCTS[id];
+        addToCart(p.name, p.price, 'M');
+    }
+
+    /* ── CART STATE ── */
+    let cart = [];
+    let chosenSize = null;
+    let activeProduct = null;
+    let modalImages = [];
+    let modalImgIndex = 0;
+
+    const fmt = n => '$' + Number(n).toLocaleString('es-CO');
+
+    function countItems() { return cart.reduce((a, i) => a + i.qty, 0); }
+    function cartTotal() { return cart.reduce((a, i) => a + i.price * i.qty, 0); }
+
+    function refreshCount() {
+        document.getElementById('cart-count').textContent = countItems();
+    }
+
+    function renderCartBody() {
+        const body = document.getElementById('cart-body');
+        const ftr = document.getElementById('cart-ftr');
+        if (!cart.length) {
+            body.innerHTML = '<div class="cart-empty"><p>Tu bolsa está vacía</p></div>';
+            ftr.style.display = 'none';
+            return;
+        }
+        ftr.style.display = 'block';
+        body.innerHTML = cart.map((item, i) => `
+            <div class="cart-item">
+                <div class="ci-thumb">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2a2a2a" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="1"/></svg>
+                </div>
+                <div>
+                    <p class="ci-name">${item.name}</p>
+                    <p class="ci-detail">Talla: ${item.size} &nbsp;·&nbsp; Cant: ${item.qty}</p>
+                </div>
+                <span class="ci-price">${fmt(item.price)}</span>
+            </div>`).join('');
+        document.getElementById('cart-total').textContent = fmt(cartTotal());
+    }
+
+    function addToCart(name, price, size) {
+        const key = name + size;
+        const ex = cart.find(i => i.name + i.size === key);
+        if (ex) ex.qty++;
+        else cart.push({ name, price, size, qty: 1 });
+        refreshCount();
+        openCart();
+    }
+
+    function openCart() {
+        renderCartBody();
+        document.getElementById('cart-sidebar').classList.add('open');
+        document.getElementById('dim').classList.add('on');
+    }
+    function closeCart() {
+        document.getElementById('cart-sidebar').classList.remove('open');
+        if (!document.getElementById('prod-modal').classList.contains('open'))
+            document.getElementById('dim').classList.remove('on');
+    }
+
+    /* ── MODAL ── */
+    function openModal(name, displayPrice, imgs, rawPrice) {
+        modalImages = Array.isArray(imgs) ? imgs : [imgs];
+        modalImgIndex = 0;
+        activeProduct = { name, price: rawPrice };
+        chosenSize = null;
+        document.getElementById('modal-name').textContent = name;
+        document.getElementById('modal-price').textContent = displayPrice;
+        document.querySelectorAll('.sz').forEach(b => b.classList.remove('active'));
+        renderModalImg();
+        document.getElementById('prod-modal').classList.add('open');
+        document.getElementById('dim').classList.add('on');
+    }
+
+    function renderModalImg() {
+        const wrap = document.getElementById('modal-img-wrap');
+        const src = modalImages[modalImgIndex];
+        const p = activeProductId ? PRODUCTS[activeProductId] : null;
+        const labels = p ? p.labels : [];
+        const tabs = modalImages.length > 1
+            ? `<div class="modal-view-tabs">${modalImages.map((_, i) =>
+                `<button class="modal-view-tab${i === modalImgIndex ? ' active' : ''}" onclick="setModalImg(${i})">${labels[i] || i + 1}</button>`
+              ).join('')}</div>`
+            : '';
+
+        const img = document.createElement('img');
+        img.src = src;
+        img.alt = activeProduct ? activeProduct.name : '';
+        img.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;min-height:480px';
+        img.onerror = function() {
+            this.style.display = 'none';
+            const ph = document.createElement('div');
+            ph.className = 'modal-img-placeholder';
+            ph.innerHTML = `<svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#2a2a2a" stroke-width="1.2"><rect x="3" y="3" width="18" height="18" rx="1"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><span>${src}</span>`;
+            wrap.appendChild(ph);
+        };
+        wrap.innerHTML = tabs;
+        wrap.insertBefore(img, wrap.firstChild);
+    }
+
+    function setModalImg(index) {
+        modalImgIndex = index;
+        renderModalImg();
+    }
+    function closeModal() {
+        document.getElementById('prod-modal').classList.remove('open');
+        if (!document.getElementById('cart-sidebar').classList.contains('open'))
+            document.getElementById('dim').classList.remove('on');
+    }
+    function closeDim() { closeCart(); closeModal(); }
+
+    function pickSize(btn) {
+        document.querySelectorAll('.sz').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        chosenSize = btn.textContent;
+    }
+    function addFromModal() {
+        if (!chosenSize) { alert('Por favor selecciona una talla.'); return; }
+        if (activeProduct) { addToCart(activeProduct.name, activeProduct.price, chosenSize); closeModal(); }
+    }
+
+    /* ── CHECKOUT ── */
+    function goCheckout() {
+        window.open('https://ig.me/m/clozkystudios', '_blank');
+    }
+</script>
+</body>
+</html>

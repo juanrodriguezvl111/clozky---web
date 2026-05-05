@@ -702,11 +702,43 @@
         ::-webkit-scrollbar-track { background: var(--black); }
         ::-webkit-scrollbar-thumb { background: #2a2a2a; }
 
+        /* ── HAMBURGER ── */
+        .hamburger {
+            display: none; flex-direction: column; gap: 5px;
+            background: none; border: none; cursor: none; padding: 4px;
+        }
+        .hamburger span {
+            display: block; width: 24px; height: 1.5px;
+            background: var(--white);
+            transition: transform 0.3s, opacity 0.3s;
+        }
+        .hamburger.open span:nth-child(1) { transform: translateY(6.5px) rotate(45deg); }
+        .hamburger.open span:nth-child(2) { opacity: 0; }
+        .hamburger.open span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
+
+        .mobile-menu {
+            display: none; position: fixed; inset: 0; top: 0;
+            background: rgba(0,0,0,0.97); z-index: 999;
+            flex-direction: column; align-items: center; justify-content: center;
+            gap: 40px; opacity: 0; pointer-events: none;
+            transition: opacity 0.35s ease;
+        }
+        .mobile-menu.open { opacity: 1; pointer-events: all; }
+        .mobile-menu a {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: clamp(40px, 10vw, 64px); letter-spacing: 0.08em;
+            color: var(--white); text-decoration: none;
+            transition: color 0.2s;
+        }
+        .mobile-menu a:hover { color: var(--red); }
+
         /* ── RESPONSIVE ── */
         @media (max-width: 900px) {
             nav { padding: 20px 24px; }
             nav.scrolled { padding: 14px 24px; }
             .nav-links { display: none; }
+            .hamburger { display: flex; }
+            .mobile-menu { display: flex; }
             .products-grid { grid-template-columns: 1fr 1fr; }
             .products-grid .product-card:last-child { grid-column: span 2; }
             #brand { grid-template-columns: 1fr; }
@@ -720,8 +752,12 @@
             .cart-sidebar { width: 100%; right: -100%; }
             .modal-box { grid-template-columns: 1fr; }
             .modal-img { display: none; }
+            .modal-info { padding: 36px 28px; }
             .collection-header, #lookbook .lookbook-header, #instagram { padding-left: 24px; padding-right: 24px; }
             #shop { padding-left: 0; padding-right: 0; }
+            .cart-btn { font-size: 9px; }
+            .hero-cta { flex-direction: column; align-items: center; }
+            .btn-primary, .btn-ghost { width: 100%; max-width: 280px; text-align: center; }
         }
     </style>
 </head>
@@ -792,6 +828,14 @@
     </div>
 </div>
 
+<!-- Mobile Menu -->
+<div class="mobile-menu" id="mobile-menu">
+    <a href="#shop"      onclick="closeMobileMenu()">Tienda</a>
+    <a href="#brand"     onclick="closeMobileMenu()">Nosotros</a>
+    <a href="#lookbook"  onclick="closeMobileMenu()">Lookbook</a>
+    <a href="#instagram" onclick="closeMobileMenu()">Instagram</a>
+</div>
+
 <!-- NAV -->
 <nav id="nav">
     <a href="#" class="nav-logo">
@@ -805,9 +849,14 @@
         <li><a href="#lookbook">Lookbook</a></li>
         <li><a href="#instagram">Instagram</a></li>
     </ul>
-    <button class="cart-btn" onclick="openCart()">
-        Bolsa <span class="cart-count" id="cart-count">0</span>
-    </button>
+    <div style="display:flex;align-items:center;gap:20px">
+        <button class="cart-btn" onclick="openCart()">
+            Bolsa <span class="cart-count" id="cart-count">0</span>
+        </button>
+        <button class="hamburger" id="hamburger" onclick="toggleMobileMenu()">
+            <span></span><span></span><span></span>
+        </button>
+    </div>
 </nav>
 
 <!-- HERO -->
@@ -1084,6 +1133,20 @@
     /* ── NAV ── */
     const nav = document.getElementById('nav');
     window.addEventListener('scroll', () => nav.classList.toggle('scrolled', scrollY > 60), { passive: true });
+
+    /* ── MOBILE MENU ── */
+    function toggleMobileMenu() {
+        const menu = document.getElementById('mobile-menu');
+        const btn  = document.getElementById('hamburger');
+        const open = menu.classList.toggle('open');
+        btn.classList.toggle('open', open);
+        document.body.style.overflow = open ? 'hidden' : '';
+    }
+    function closeMobileMenu() {
+        document.getElementById('mobile-menu').classList.remove('open');
+        document.getElementById('hamburger').classList.remove('open');
+        document.body.style.overflow = '';
+    }
 
     /* ── HERO PARALLAX ── */
     const heroBg = document.getElementById('hero-bg');

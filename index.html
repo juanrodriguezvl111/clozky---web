@@ -594,14 +594,8 @@
             transition: opacity 0.2s;
         }
         .modal-close:hover { opacity: 1; }
-        .modal-img { background: var(--gray-mid); min-height: 480px; position: relative; overflow: hidden; }
+        .modal-img { background: var(--gray-mid); min-height: 480px; position: relative; }
         .modal-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
-        .modal-img-slide {
-            position: absolute; inset: 0;
-            width: 100%; height: 100%; object-fit: cover; display: block;
-            opacity: 0; transition: opacity 0.25s ease;
-        }
-        .modal-img-slide.active { opacity: 1; }
         .modal-view-tabs {
             position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%);
             display: flex; gap: 4px; z-index: 2;
@@ -1439,31 +1433,41 @@
 
     function renderModalImg() {
         const wrap = document.getElementById('modal-img-wrap');
+        const src = modalImages[modalImgIndex];
         const p = activeProductId ? PRODUCTS[activeProductId] : null;
         const labels = p ? p.labels : [];
-        const altText = activeProduct ? activeProduct.name : '';
-
-        // Render all slides at once: browser preloads in parallel,
-        // tab switching becomes an instant CSS opacity toggle.
-        const slides = modalImages.map((src, i) =>
-            `<img src="${src}" alt="${altText}" class="modal-img-slide${i === modalImgIndex ? ' active' : ''}" decoding="async" onerror="this.style.visibility='hidden'">`
-        ).join('');
-
         const tabs = modalImages.length > 1
             ? `<div class="modal-view-tabs">${modalImages.map((_, i) =>
                 `<button class="modal-view-tab${i === modalImgIndex ? ' active' : ''}" onclick="setModalImg(${i})">${labels[i] || i + 1}</button>`
               ).join('')}</div>`
             : '';
 
-        wrap.innerHTML = slides + tabs;
+        const img = document.createElement('img');
+        img.src = src;
+        img.alt = activeProduct ? activeProduct.name : '';
+        img.decoding = 'async';
+        img.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;min-height:480px';
+        img.onerror = function() {
+            this.style.display = 'none';
+            const ph = document.createElement('div');
+            ph.className = 'modal-img-placeholder';
+            ph.innerHTML = `<svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#2a2a2a" stroke-width="1.2"><rect x="3" y="3" width="18" height="18" rx="1"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><span>${src}</span>`;
+            wrap.appendChild(ph);
+        };
+        wrap.innerHTML = tabs;
+        wrap.insertBefore(img, wrap.firstChild);
+
+        // Precarga las otras vistas en caché para que el cambio de pestaña sea instantáneo.
+        modalImages.forEach((s, i) => {
+            if (i !== modalImgIndex) { const pre = new Image(); pre.src = s; }
+        });
     }
 
     function setModalImg(index) {
         modalImgIndex = index;
         const wrap = document.getElementById('modal-img-wrap');
-        wrap.querySelectorAll('.modal-img-slide').forEach((img, i) => {
-            img.classList.toggle('active', i === index);
-        });
+        const img = wrap.querySelector('img');
+        if (img) img.src = modalImages[index];
         wrap.querySelectorAll('.modal-view-tab').forEach((btn, i) => {
             btn.classList.toggle('active', i === index);
         });

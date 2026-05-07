@@ -33,19 +33,25 @@ exports.handler = async (event) => {
     try { payload = JSON.parse(event.body); }
     catch { return { statusCode: 400, body: 'Bad Request' }; }
 
-    // ── Verificar firma de Wompi ──
+    // ── Verificar firma de Wompi — OBLIGATORIA ──
     const { signature, timestamp } = payload;
-    if (signature?.checksum) {
-        const chain = [
-            ...(signature.properties || []).map(p => deepGet(payload, p)),
-            timestamp,
-            WOMPI_SECRET,
-        ].join('');
-        const expected = crypto.createHash('sha256').update(chain).digest('hex');
-        if (expected !== signature.checksum) {
-            console.error('Firma inválida');
-            return { statusCode: 401, body: 'Unauthorized' };
-        }
+    if (!signature?.checksum) {
+        console.error('Webhook rechazado: sin firma');
+        return { statusCode: 401, body: 'Unauthorized' };
+    }
+    if (!WOMPI_SECRET) {
+        console.error('WOMPI_INTEGRITY_SECRET no configurado');
+        return { statusCode: 500, body: 'Server Error' };
+    }
+    const chain = [
+        ...(signature.properties || []).map(p => deepGet(payload, p)),
+        timestamp,
+        WOMPI_SECRET,
+    ].join('');
+    const expected = crypto.createHash('sha256').update(chain).digest('hex');
+    if (expected !== signature.checksum) {
+        console.error('Firma inválida');
+        return { statusCode: 401, body: 'Unauthorized' };
     }
 
     const tx = payload.data?.transaction;

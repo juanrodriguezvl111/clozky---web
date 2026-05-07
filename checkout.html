@@ -365,18 +365,8 @@
 </main>
 
 <script>
-    // ── CONFIGURACIÓN WOMPI ────────────────────────────────────────────
-    // Reemplaza con tus llaves reales del dashboard de Wompi (app.wompi.co)
-    // Llave pública: empieza con pub_test_ (pruebas) o pub_prod_ (producción)
-    const WOMPI_PUBLIC_KEY       = 'pub_prod_H2t4E7Bl53P5R2M9949Njdmtl6lIixkv';
-    const WOMPI_INTEGRITY_SECRET = 'prod_integrity_WxBGcIbDHsNADrocQYT6reoGS9YqjzQL';
-    // ──────────────────────────────────────────────────────────────────
-
-    const SUPABASE_URL      = 'https://opcnglllvppfavjjpjkf.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9wY25nbGxsdnBwZmF2ampwamtmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5OTk3NzEsImV4cCI6MjA5MzU3NTc3MX0.Wq0Hk_mrLefO0doMVh5G5yLIQK5rHQ9tlgMzdCbafHM';
-
-    const ENVIO_COSTO   = 12000;   // $12.000 COP — costo de envío estándar
-    const ENVIO_GRATIS  = 200000;  // Envío gratis en compras desde $200.000
+    const ENVIO_COSTO  = 12000;
+    const ENVIO_GRATIS = 200000;
 
     const PRODUCT_IMGS = {
         1: 'assets/product1.jpg',
@@ -444,12 +434,6 @@
         alert('Función de descuento próximamente. Si tienes un código válido, escríbenos al DM de @clozkystudios.');
     }
 
-    // ── SHA-256 (Web Crypto API) ──
-    async function sha256hex(str) {
-        const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
-        return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
-    }
-
     // ── VALIDAR FORMULARIO ──
     function validarFormulario() {
         const campos = ['email','nombre','apellidos','cedula','direccion','ciudad','telefono'];
@@ -470,94 +454,48 @@
         return true;
     }
 
-    // ── GENERAR REFERENCIA ──
-    function generarRef() {
-        const ts = Date.now().toString(36).toUpperCase();
-        const rnd = Math.random().toString(36).substr(2, 4).toUpperCase();
-        return `CLZKY-${ts}-${rnd}`;
-    }
-
-    // ── PROCESAR PAGO ──
+    // ── PROCESAR PAGO — firma generada en el servidor ──
     async function procesarPago() {
         if (!cart.length) return;
         if (!validarFormulario()) return;
 
         const btn = document.getElementById('pay-btn');
         btn.disabled = true;
-        btn.textContent = 'Redirigiendo a Wompi...';
+        btn.textContent = 'Procesando...';
 
-        const reference = generarRef();
-        const amountInCents = total * 100;
-        const integrityInput = reference + amountInCents + 'COP' + WOMPI_INTEGRITY_SECRET;
-        const integrityHash = await sha256hex(integrityInput);
-
-        // Guardar orden
-        const orderData = {
-            reference,
-            fecha: new Date().toISOString(),
-            items: cart,
-            subtotal, envio, total,
-            cliente: {
-                email: document.getElementById('email').value.trim(),
-                nombre: document.getElementById('nombre').value.trim() + ' ' + document.getElementById('apellidos').value.trim(),
-                cedula: document.getElementById('cedula').value.trim(),
-                direccion: [
-                    document.getElementById('direccion').value.trim(),
-                    document.getElementById('apto').value.trim(),
-                ].filter(Boolean).join(', '),
-                ciudad: document.getElementById('ciudad').value.trim(),
-                depto: document.getElementById('depto').value,
-                telefono: document.getElementById('telefono').value.trim(),
-            }
+        const cliente = {
+            email:     document.getElementById('email').value.trim(),
+            nombre:    document.getElementById('nombre').value.trim() + ' ' + document.getElementById('apellidos').value.trim(),
+            cedula:    document.getElementById('cedula').value.trim(),
+            direccion: [document.getElementById('direccion').value.trim(), document.getElementById('apto').value.trim()].filter(Boolean).join(', '),
+            ciudad:    document.getElementById('ciudad').value.trim(),
+            depto:     document.getElementById('depto').value,
+            telefono:  document.getElementById('telefono').value.trim(),
         };
-        localStorage.setItem('clzky_order', JSON.stringify(orderData));
 
-        // Guardar pedido en Supabase para que el webhook sepa qué descontar
         try {
-            await fetch(`${SUPABASE_URL}/rest/v1/pedidos`, {
+            const res = await fetch('/.netlify/functions/create-payment', {
                 method: 'POST',
-                headers: {
-                    'apikey': SUPABASE_ANON_KEY,
-                    'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-                    'Content-Type': 'application/json',
-                    'Prefer': 'return=minimal',
-                },
-                body: JSON.stringify({
-                    referencia: reference,
-                    items: cart,
-                    cliente: orderData.cliente,
-                    total: total,
-                    estado: 'pendiente',
-                }),
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ items: cart, cliente }),
             });
-        } catch (e) {
-            console.warn('No se pudo guardar en DB, igual se procesa el pago:', e);
+
+            if (!res.ok) throw new Error(`Error del servidor: ${res.status}`);
+            const { wompiUrl, reference, total: totalReal } = await res.json();
+
+            // Guardar para mostrar en gracias.html
+            localStorage.setItem('clzky_order', JSON.stringify({
+                reference, fecha: new Date().toISOString(),
+                items: cart, total: totalReal, cliente,
+            }));
+
+            window.location.href = wompiUrl;
+        } catch(e) {
+            console.error('Error al crear pago:', e);
+            btn.disabled = false;
+            btn.textContent = 'Pagar con Wompi';
+            alert('Error al procesar el pago. Intenta de nuevo.');
         }
-
-        // Construir URL de Wompi
-        const wompiUrl = new URL('https://checkout.wompi.co/p/');
-        wompiUrl.searchParams.set('public-key',          WOMPI_PUBLIC_KEY);
-        wompiUrl.searchParams.set('currency',            'COP');
-        wompiUrl.searchParams.set('amount-in-cents',     amountInCents);
-        wompiUrl.searchParams.set('reference',           reference);
-        wompiUrl.searchParams.set('signature:integrity', integrityHash);
-        wompiUrl.searchParams.set('redirect-url',        window.location.origin + '/gracias.html');
-
-        // Datos del cliente (pre-llena el formulario en Wompi)
-        wompiUrl.searchParams.set('customer-data:email',          orderData.cliente.email);
-        wompiUrl.searchParams.set('customer-data:full-name',      orderData.cliente.nombre);
-        wompiUrl.searchParams.set('customer-data:phone-number',   orderData.cliente.telefono);
-        wompiUrl.searchParams.set('customer-data:legal-id',       orderData.cliente.cedula);
-        wompiUrl.searchParams.set('customer-data:legal-id-type',  'CC');
-
-        // Dirección de envío
-        wompiUrl.searchParams.set('shipping-address:address-line-1', orderData.cliente.direccion);
-        wompiUrl.searchParams.set('shipping-address:city',           orderData.cliente.ciudad);
-        wompiUrl.searchParams.set('shipping-address:region',         orderData.cliente.depto);
-        wompiUrl.searchParams.set('shipping-address:country',        'CO');
-        wompiUrl.searchParams.set('shipping-address:phone-number',   orderData.cliente.telefono);
-
-        window.location.href = wompiUrl.toString();
     }
 
     init();

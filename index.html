@@ -305,11 +305,10 @@
 
         .product-img-wrap {
             width: 100%; aspect-ratio: 3/4; overflow: hidden;
-            position: relative; background: var(--gray-mid);
+            position: relative;
         }
         .product-img-wrap img {
             width: 100%; height: 100%; object-fit: cover; display: block;
-            transition: transform 0.7s cubic-bezier(0.25,0.46,0.45,0.94);
             will-change: transform;
         }
         .product-card:hover .product-img-wrap img { transform: scale(1.06); }
@@ -418,13 +417,25 @@
             grid-template-rows: 1fr 1fr;
             gap: 2px; height: 90vh;
         }
-        .lk-item { overflow: hidden; background: var(--gray-dark); position: relative; }
+        .lk-item {
+            overflow: hidden; position: relative;
+            background: linear-gradient(90deg, #0d0d0d 25%, #1c1c1c 50%, #0d0d0d 75%);
+            background-size: 400% 100%;
+            animation: lk-shimmer 1.6s ease-in-out infinite;
+        }
+        .lk-item.img-loaded { animation: none; background: var(--gray-dark); }
+        @keyframes lk-shimmer {
+            0%   { background-position: 100% 0; }
+            100% { background-position: -100% 0; }
+        }
         .lk-item.span2 { grid-row: span 2; }
         .lk-item img {
             width: 100%; height: 100%; object-fit: cover; display: block;
-            transition: transform 0.7s ease;
+            transition: transform 0.7s ease, opacity 0.5s ease;
             will-change: transform;
+            opacity: 0;
         }
+        .lk-item.img-loaded img { opacity: 1; }
         .lk-item:hover img { transform: scale(1.05); }
         .lk-placeholder {
             width: 100%; height: 100%;
@@ -701,6 +712,21 @@
             font-family: 'Bebas Neue', sans-serif;
             font-size: 40px; letter-spacing: 0.16em; display: block; margin-bottom: 16px;
         }
+
+        /* ── PERFORMANCE ── */
+        #lookbook  { content-visibility: auto; contain-intrinsic-size: 0 90vh; }
+        #instagram { content-visibility: auto; contain-intrinsic-size: 0 500px; }
+        footer     { content-visibility: auto; contain-intrinsic-size: 0 300px; }
+
+        /* Skeleton en product cards mientras cargan */
+        .product-img-wrap {
+            background: linear-gradient(90deg, #111 25%, #1c1c1c 50%, #111 75%);
+            background-size: 400% 100%;
+            animation: lk-shimmer 1.6s ease-in-out infinite;
+        }
+        .product-img-wrap.img-loaded { animation: none; background: var(--gray-mid); }
+        .product-img-wrap img { opacity: 0; transition: opacity 0.4s ease, transform 0.7s cubic-bezier(0.25,0.46,0.45,0.94); }
+        .product-img-wrap.img-loaded img { opacity: 1; }
 
         /* ── SCROLLBAR ── */
         ::-webkit-scrollbar { width: 2px; }
@@ -1547,6 +1573,18 @@
 
     // Sincronizar inventario real desde Supabase y re-renderizar
     sincronizarInventario().then(() => marcarAgotados());
+
+    // ── FADE-IN de imágenes al cargar ──
+    function activarFadeIn(img) {
+        const parent = img.closest('.lk-item, .product-img-wrap');
+        if (!parent) return;
+        if (img.complete && img.naturalWidth) {
+            parent.classList.add('img-loaded');
+        } else {
+            img.addEventListener('load', () => parent.classList.add('img-loaded'), { once: true });
+        }
+    }
+    document.querySelectorAll('.lk-item img, .product-img-wrap img').forEach(activarFadeIn);
 </script>
 </body>
 </html>

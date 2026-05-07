@@ -1433,31 +1433,52 @@
 
     function renderModalImg() {
         const wrap = document.getElementById('modal-img-wrap');
-        const src = modalImages[modalImgIndex];
-        const p = activeProductId ? PRODUCTS[activeProductId] : null;
+        const p = PRODUCTS[activeProductId];
         const labels = p ? p.labels : [];
-        const tabs = modalImages.length > 1
-            ? `<div class="modal-view-tabs">${modalImages.map((_, i) =>
-                `<button class="modal-view-tab${i === modalImgIndex ? ' active' : ''}" onclick="setModalImg(${i})">${labels[i] || i + 1}</button>`
-              ).join('')}</div>`
-            : '';
 
+        // Limpiar wrap completamente
+        wrap.innerHTML = '';
+
+        // ── Imagen principal ──
         const img = document.createElement('img');
-        img.src = src;
+        img.id = 'modal-main-img';
         img.alt = activeProduct ? activeProduct.name : '';
-        img.decoding = 'async';
-        img.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;min-height:480px';
+        img.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;min-height:480px;transition:opacity 0.25s ease';
         img.onerror = function() {
-            this.style.display = 'none';
-            const ph = document.createElement('div');
-            ph.className = 'modal-img-placeholder';
-            ph.innerHTML = `<svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#2a2a2a" stroke-width="1.2"><rect x="3" y="3" width="18" height="18" rx="1"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><span>${src}</span>`;
-            wrap.appendChild(ph);
+            // No ocultar — mostrar placeholder pero mantener img visible
+            this.style.opacity = '0';
+            let ph = wrap.querySelector('.modal-img-placeholder');
+            if (!ph) {
+                ph = document.createElement('div');
+                ph.className = 'modal-img-placeholder';
+                ph.innerHTML = `<svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#2a2a2a" stroke-width="1.2"><rect x="3" y="3" width="18" height="18" rx="1"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><span>Sin imagen</span>`;
+                wrap.appendChild(ph);
+            }
         };
-        wrap.innerHTML = tabs;
-        wrap.insertBefore(img, wrap.firstChild);
+        img.onload = function() {
+            this.style.opacity = '1';
+            const ph = wrap.querySelector('.modal-img-placeholder');
+            if (ph) ph.remove();
+        };
+        img.style.opacity = '0';
+        wrap.appendChild(img);
+        img.src = modalImages[modalImgIndex]; // src DESPUÉS de appendear y definir handlers
 
-        // Precarga las otras vistas en caché para que el cambio de pestaña sea instantáneo.
+        // ── Tabs ──
+        if (modalImages.length > 1) {
+            const tabsDiv = document.createElement('div');
+            tabsDiv.className = 'modal-view-tabs';
+            modalImages.forEach((_, i) => {
+                const btn = document.createElement('button');
+                btn.className = 'modal-view-tab' + (i === modalImgIndex ? ' active' : '');
+                btn.textContent = labels[i] || (i + 1);
+                btn.onclick = () => setModalImg(i);
+                tabsDiv.appendChild(btn);
+            });
+            wrap.appendChild(tabsDiv);
+        }
+
+        // Precarga el resto de imágenes
         modalImages.forEach((s, i) => {
             if (i !== modalImgIndex) { const pre = new Image(); pre.src = s; }
         });
@@ -1466,8 +1487,16 @@
     function setModalImg(index) {
         modalImgIndex = index;
         const wrap = document.getElementById('modal-img-wrap');
-        const img = wrap.querySelector('img');
-        if (img) img.src = modalImages[index];
+        const img = document.getElementById('modal-main-img');
+        if (img) {
+            img.style.opacity = '0';
+            img.style.display = 'block'; // reset por si onerror lo tocó
+            img.onerror = function() {
+                this.style.opacity = '0';
+            };
+            img.onload = function() { this.style.opacity = '1'; };
+            img.src = modalImages[index];
+        }
         wrap.querySelectorAll('.modal-view-tab').forEach((btn, i) => {
             btn.classList.toggle('active', i === index);
         });

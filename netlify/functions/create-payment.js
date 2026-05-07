@@ -15,7 +15,16 @@ const PRECIOS = {
 const ENVIO_COSTO  = 12000;
 const ENVIO_GRATIS = 200000;
 
+const CORS = {
+    'Access-Control-Allow-Origin':  SITE_URL,
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+};
+
 exports.handler = async (event) => {
+    if (event.httpMethod === 'OPTIONS') {
+        return { statusCode: 204, headers: CORS, body: '' };
+    }
     if (event.httpMethod !== 'POST') {
         return { statusCode: 405, body: 'Method Not Allowed' };
     }
@@ -110,7 +119,7 @@ exports.handler = async (event) => {
 
     return {
         statusCode: 200,
-        headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': SITE_URL },
+        headers: { ...CORS, 'Content-Type': 'application/json' },
         body: JSON.stringify({ wompiUrl: url.toString(), reference: ref, total }),
     };
 };

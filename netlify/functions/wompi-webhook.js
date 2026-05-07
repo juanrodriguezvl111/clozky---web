@@ -2,7 +2,8 @@ const crypto = require('crypto');
 
 const SUPABASE_URL     = 'https://opcnglllvppfavjjpjkf.supabase.co';
 const SUPABASE_KEY     = process.env.SUPABASE_SERVICE_KEY;
-const WOMPI_SECRET     = process.env.WOMPI_INTEGRITY_SECRET;
+// Wompi usa el "Secreto de Eventos" para firmar webhooks (≠ Secreto de Integridad)
+const WOMPI_SECRET     = process.env.WOMPI_EVENTOS_SECRET;
 
 // Navega objetos anidados: "data.transaction.id" → valor real
 function deepGet(obj, path) {
@@ -70,7 +71,17 @@ exports.handler = async (event) => {
             return { statusCode: 200, body: 'OK' };
         }
 
-        const items = pedidos[0].items || [];
+        const pedido = pedidos[0];
+
+        // Verificar que el monto cobrado coincide con el pedido (evita pagos parciales)
+        const montoCobrado = tx.amount_in_cents;
+        const montoEsperado = pedido.total * 100;
+        if (montoCobrado !== montoEsperado) {
+            console.error(`Monto incorrecto: cobrado ${montoCobrado}, esperado ${montoEsperado}`);
+            return { statusCode: 200, body: 'OK' }; // No procesar pedido con monto incorrecto
+        }
+
+        const items = pedido.items || [];
 
         // Descontar stock por cada ítem
         for (const item of items) {

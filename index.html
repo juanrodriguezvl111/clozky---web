@@ -1583,6 +1583,26 @@
         }
     }
     document.querySelectorAll('.lk-item img').forEach(activarFadeIn);
+
+    // ── PRECARGA SILENCIOSA cuando el browser está libre ──
+    // Carga todas las imágenes de productos (tabs modal) y lookbook en caché
+    // sin competir con la carga inicial de la página
+    const precargar = () => {
+        const srcs = [
+            // Todas las vistas de cada producto (FRONT, BACK, LOOK FRONT, LOOK BACK)
+            ...Object.values(PRODUCTS).flatMap(p => p.imgs),
+            // Lookbook completo
+            'assets/lookbook1.jpg','assets/lookbook2.jpg','assets/lookbook3.jpg',
+            'assets/lookbook4.jpg','assets/lookbook5.jpg',
+        ];
+        srcs.forEach(src => { const img = new Image(); img.src = src; });
+    };
+
+    if ('requestIdleCallback' in window) {
+        requestIdleCallback(precargar, { timeout: 3000 });
+    } else {
+        setTimeout(precargar, 3000);
+    }
 </script>
 </body>
 </html>

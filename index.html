@@ -6,6 +6,24 @@
     <title>Clozky</title>
     <link rel="icon" type="image/png" href="assets/mascot.png">
 
+    <!-- Meta Pixel Code -->
+    <script>
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window, document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', '2011281096212327');
+    fbq('track', 'PageView');
+    </script>
+    <noscript><img height="1" width="1" style="display:none"
+    src="https://www.facebook.com/tr?id=2011281096212327&ev=PageView&noscript=1"
+    /></noscript>
+    <!-- End Meta Pixel Code -->
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -1311,19 +1329,19 @@
     /* ── PRODUCT CATALOG ── */
     const PRODUCTS = {
         1: {
-            slug: 'worthless',
+            slug: 'worthless', catalogId: 'CLZ001',
             name: 'WORTHLESS SACRIFICE', displayPrice: '$260.000', price: 260000,
             imgs:   ['assets/product1.jpg',  'assets/product1b.jpg'],
             labels: ['FRONT',               'LOOK'],
         },
         2: {
-            slug: 'nograce',
+            slug: 'nograce', catalogId: 'CLZ002',
             name: 'NO GRACE', displayPrice: '$220.000', price: 220000,
             imgs:   ['assets/product2.jpg',  'assets/product2b.jpg',  'assets/product2c.jpg',  'assets/product2d.jpg'],
             labels: ['FRONT',               'BACK',                  'LOOK FRONT',            'LOOK BACK'],
         },
         3: {
-            slug: 'devil',
+            slug: 'devil', catalogId: 'CLZ003',
             name: "DEVIL'S F*CKING EVIL", displayPrice: '$240.000', price: 240000,
             imgs:   ['assets/product3.jpg',  'assets/product3b.jpg',  'assets/product3c.jpg',  'assets/product3d.jpg'],
             labels: ['FRONT',               'BACK',                  'LOOK FRONT',            'LOOK BACK'],
@@ -1344,6 +1362,16 @@
         // Actualiza URL a #slug sin saltar el scroll (para deep-links del anuncio)
         if (!skipHash && p.slug && history.replaceState) {
             history.replaceState(null, '', '#' + p.slug);
+        }
+        // Meta Pixel: ver producto (alimenta retargeting de catalogo)
+        if (window.fbq && p.catalogId) {
+            fbq('track', 'ViewContent', {
+                content_ids: [p.catalogId],
+                content_type: 'product',
+                content_name: p.name,
+                value: p.price,
+                currency: 'COP'
+            });
         }
         openModal(p.name, p.displayPrice, p.imgs, p.price);
     }
@@ -1417,6 +1445,16 @@
         if (ex) ex.qty += qty;
         else cart.push({ name, price, size, qty, productId: productId || null });
         localStorage.setItem('clzky_cart', JSON.stringify(cart));
+        // Meta Pixel: agregar al carrito
+        if (window.fbq && productId && PRODUCTS[productId]) {
+            fbq('track', 'AddToCart', {
+                content_ids: [PRODUCTS[productId].catalogId],
+                content_type: 'product',
+                content_name: name,
+                value: price * qty,
+                currency: 'COP'
+            });
+        }
         refreshCount();
         openCart();
     }
@@ -1563,6 +1601,16 @@
     function goCheckout() {
         if (!cart.length) return;
         localStorage.setItem('clzky_cart', JSON.stringify(cart));
+        // Meta Pixel: inicio de pago
+        if (window.fbq) {
+            fbq('track', 'InitiateCheckout', {
+                content_ids: cart.map(i => i.productId && PRODUCTS[i.productId] ? PRODUCTS[i.productId].catalogId : null).filter(Boolean),
+                content_type: 'product',
+                num_items: countItems(),
+                value: cartTotal(),
+                currency: 'COP'
+            });
+        }
         window.location.href = 'checkout.html';
     }
 

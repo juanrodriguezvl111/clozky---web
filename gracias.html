@@ -126,8 +126,8 @@
                 <a href="https://www.instagram.com/clozkystudios" target="_blank" class="btn-ghost">Seguirnos en Instagram</a>
             </div>`;
 
-        // Meta Pixel: compra (mide ventas + optimiza la campana)
-        if (window.fbq && order) {
+        // Meta Pixel: compra (solo con pago APROBADO, evita Purchase falsos)
+        if (window.fbq && order && status === 'APPROVED') {
             const CATALOG = { 1: 'CLZ001', 2: 'CLZ002', 3: 'CLZ003' };
             fbq('track', 'Purchase', {
                 content_ids: order.items.map(i => CATALOG[i.productId]).filter(Boolean),

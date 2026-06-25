@@ -1311,28 +1311,40 @@
     /* ── PRODUCT CATALOG ── */
     const PRODUCTS = {
         1: {
+            slug: 'worthless',
             name: 'WORTHLESS SACRIFICE', displayPrice: '$260.000', price: 260000,
             imgs:   ['assets/product1.jpg',  'assets/product1b.jpg'],
             labels: ['FRONT',               'LOOK'],
         },
         2: {
+            slug: 'nograce',
             name: 'NO GRACE', displayPrice: '$220.000', price: 220000,
             imgs:   ['assets/product2.jpg',  'assets/product2b.jpg',  'assets/product2c.jpg',  'assets/product2d.jpg'],
             labels: ['FRONT',               'BACK',                  'LOOK FRONT',            'LOOK BACK'],
         },
         3: {
+            slug: 'devil',
             name: "DEVIL'S F*CKING EVIL", displayPrice: '$240.000', price: 240000,
             imgs:   ['assets/product3.jpg',  'assets/product3b.jpg',  'assets/product3c.jpg',  'assets/product3d.jpg'],
             labels: ['FRONT',               'BACK',                  'LOOK FRONT',            'LOOK BACK'],
         },
     };
 
+    // Mapa slug -> id para deep-links (#worthless abre esa prenda)
+    const SLUG_TO_ID = Object.fromEntries(
+        Object.entries(PRODUCTS).map(([id, p]) => [p.slug, Number(id)])
+    );
+
     let activeProductId = null;
     let modalQty = 1;
 
-    function openProduct(id) {
+    function openProduct(id, skipHash) {
         activeProductId = id;
         const p = PRODUCTS[id];
+        // Actualiza URL a #slug sin saltar el scroll (para deep-links del anuncio)
+        if (!skipHash && p.slug && history.replaceState) {
+            history.replaceState(null, '', '#' + p.slug);
+        }
         openModal(p.name, p.displayPrice, p.imgs, p.price);
     }
     function addProductToCart(id) {
@@ -1529,6 +1541,11 @@
         document.getElementById('prod-modal').classList.remove('open');
         if (!document.getElementById('cart-sidebar').classList.contains('open'))
             document.getElementById('dim').classList.remove('on');
+        // Limpia #slug de producto de la URL (deja intactas anclas de seccion)
+        const h = location.hash.replace('#', '');
+        if (SLUG_TO_ID[h] && history.replaceState) {
+            history.replaceState(null, '', location.pathname + location.search);
+        }
     }
     function closeDim() { closeCart(); closeModal(); }
 
@@ -1571,6 +1588,15 @@
 
     // Sincronizar inventario real desde Supabase y re-renderizar
     sincronizarInventario().then(() => marcarAgotados());
+
+    // ── DEEP-LINK: abrir prenda si la URL trae #slug (anuncios de catalogo Meta) ──
+    function abrirDesdeHash() {
+        const h = location.hash.replace('#', '');
+        const id = SLUG_TO_ID[h];
+        if (id) openProduct(id, true); // true = no reescribir el hash, ya esta puesto
+    }
+    abrirDesdeHash();
+    window.addEventListener('hashchange', abrirDesdeHash);
 
     // ── FADE-IN de imágenes al cargar ──
     function activarFadeIn(img) {

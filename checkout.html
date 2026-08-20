@@ -480,7 +480,12 @@
                 body: JSON.stringify({ items: cart, cliente }),
             });
 
-            if (!res.ok) throw new Error(`Error del servidor: ${res.status}`);
+            if (!res.ok) {
+                // El servidor explica qué pasó (carrito inválido, base caída…).
+                // Mostrarlo es mejor que un "intenta de nuevo" a ciegas.
+                const motivo = (await res.text().catch(() => '')).trim();
+                throw new Error(motivo || `Error del servidor: ${res.status}`);
+            }
             const { wompiUrl, reference, total: totalReal } = await res.json();
 
             // Guardar para mostrar en gracias.html
@@ -494,7 +499,7 @@
             console.error('Error al crear pago:', e);
             btn.disabled = false;
             btn.textContent = 'Pagar con Wompi';
-            alert('Error al procesar el pago. Intenta de nuevo.');
+            alert(e.message || 'Error al procesar el pago. Intenta de nuevo.');
         }
     }
 

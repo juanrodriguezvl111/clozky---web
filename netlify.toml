@@ -2,6 +2,20 @@
   functions = "netlify/functions"
   publish   = "."
 
+# ── Cabeceras de seguridad ──
+# La CSP admite 'unsafe-inline' porque el sitio lleva <style> y <script> en línea
+# y el Píxel de Meta inyecta los suyos. Eso limita su valor contra XSS: lo que sí
+# hace hoy es bloquear orígenes que no estén en esta lista.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
+    X-Content-Type-Options    = "nosniff"
+    X-Frame-Options           = "DENY"
+    Referrer-Policy           = "strict-origin-when-cross-origin"
+    Permissions-Policy        = "camera=(), microphone=(), geolocation=(), payment=()"
+    Content-Security-Policy   = "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; img-src 'self' data: https://www.facebook.com; media-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline' https://connect.facebook.net; connect-src 'self' https://opcnglllvppfavjjpjkf.supabase.co https://www.facebook.com; form-action 'self' https://checkout.wompi.co; frame-src 'none'; upgrade-insecure-requests"
+
 [[headers]]
   for = "/assets/*.jpg"
   [headers.values]
@@ -9,6 +23,11 @@
 
 [[headers]]
   for = "/assets/*.png"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/assets/*.webp"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
 

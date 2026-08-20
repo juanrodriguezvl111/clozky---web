@@ -82,6 +82,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 
 /* Proporciones variadas: una sala de verdad no tiene todo del mismo tamaño */
 .piece[data-fmt="retrato"]  .canvas{aspect-ratio:3/4}
+.piece[data-fmt="alto"]     .canvas{aspect-ratio:4/5}
 .piece[data-fmt="cuadro"]   .canvas{aspect-ratio:1/1}
 .piece[data-fmt="paisaje"]  .canvas{aspect-ratio:4/3}
 .piece[data-fmt="panel"]    .canvas{aspect-ratio:2/3}
@@ -203,7 +204,7 @@ footer{border-top:1px solid rgba(255,255,255,.09);padding:32px clamp(16px,3vw,44
 
 <section class="room-head">
     <p class="kicker">Clozky Gallery</p>
-    <h1>La sala</h1>
+    <h1>LA SALA</h1>
     <p>Cada imagen es una pieza. Se cuelga, se mira y en algún momento se descuelga.</p>
 </section>
 
@@ -231,16 +232,17 @@ footer{border-top:1px solid rgba(255,255,255,.09);padding:32px clamp(16px,3vw,44
 <script>
 /* ── OBRAS ──
    Para colgar una pieza nueva: agrega una línea aquí.
-   fmt: retrato | cuadro | paisaje | panel */
+   fmt: alto (4:5) | retrato (3:4) | panel (2:3) — solo verticales:
+   las fotos son verticales y el encuadre es cover, un formato
+   horizontal les cortaría la cabeza o los pies. */
 var OBRAS = [
-  { src:'assets/lookbook1.jpg', ttl:'Sin título I',     meta:'Bogotá · 2026',        fmt:'retrato' },
-  { src:'assets/lookbook2.jpg', ttl:'Saints',           meta:'Cápsula 001 · 2026',   fmt:'cuadro'  },
-  { src:'assets/lookbook3.jpg', ttl:'Or Sinners',       meta:'Cápsula 001 · 2026',   fmt:'panel'   },
-  { src:'assets/storefront.webp',ttl:'La esquina',       meta:'Bogotá · 2026',        fmt:'paisaje' },
-  { src:'assets/lookbook4.jpg', ttl:'Effortless',       meta:'Estudio · 2026',       fmt:'retrato' },
-  { src:'assets/lookbook5.jpg', ttl:'Sin título II',    meta:'Bogotá · 2026',        fmt:'cuadro'  },
-  { src:'assets/product2c.jpg', ttl:'No Grace, detalle',meta:'Cápsula 001 · 2026',   fmt:'panel'   },
-  { src:'assets/product3c.jpg', ttl:'Evil, detalle',    meta:'Cápsula 001 · 2026',   fmt:'paisaje' }
+  { src:'assets/sala1.webp', ttl:'El nombre',      meta:'Effortless Boys · 2026', fmt:'panel'   },
+  { src:'assets/sala2.webp', ttl:'Rojo',           meta:'Cápsula 001 · 2026',     fmt:'alto'    },
+  { src:'assets/sala3.webp', ttl:'La chispa',      meta:'Archivo · 2026',         fmt:'retrato' },
+  { src:'assets/sala4.webp', ttl:'Madrugada',      meta:'Effortless Boys · 2026', fmt:'panel'   },
+  { src:'assets/sala5.webp', ttl:'Sin prisa',      meta:'Archivo · 2026',         fmt:'retrato' },
+  { src:'assets/sala6.webp', ttl:'Holy Sinners',   meta:'Cápsula 001 · 2026',     fmt:'alto'    },
+  { src:'assets/sala7.webp', ttl:'La reunión',     meta:'Effortless Boys · 2026', fmt:'retrato' }
 ];
 
 var rail = document.getElementById('rail');

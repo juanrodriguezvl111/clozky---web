@@ -90,6 +90,30 @@ Estado al 19 de agosto de 2026. **Nada de esto está en producción todavía.**
   solo `alto` (4:5), `retrato` (3:4) y `panel` (2:3).
 - Los PNG de origen (>100 MB) viven en `_fuentes/`, ignorada por git y fuera
   del deploy. `assets/` solo lleva lo que alguna página referencia de verdad.
+- **Wompi, firma de eventos:** las rutas de `signature.properties` son
+  relativas a `data`, NO a la raíz del payload — `"transaction.id"` significa
+  `data.transaction.id`. Y el checksum llega en hexadecimal MAYÚSCULA, mientras
+  `digest('hex')` de Node lo da en minúscula. Fallar cualquiera de las dos hace
+  que el webhook devuelva 401 a todos los eventos legítimos, en silencio.
+- **Wompi, redirección:** al volver del checkout solo manda `?id=<transaccion>`.
+  No existe `payment-status` ni `status`. El estado hay que pedirlo a
+  `https://production.wompi.co/v1/transactions/<id>` (lectura pública).
+- **Una prueba que construye el payload como lo espera tu código no prueba
+  nada.** Los 13 casos del webhook estaban en verde mientras rechazaba el 100%
+  de los eventos reales, porque la prueba imitaba el bug. El formato de un
+  tercero se copia de su documentación, o se captura de un evento real.
+- Netlify Free (2026) son 300 créditos/mes: ~15 GB de tráfico y ~20 despliegues
+  de producción, con tope duro. Al agotarse **se apagan las funciones**, o sea
+  el checkout. Vercel Hobby da más, pero prohíbe el uso comercial: una tienda
+  que cobra viola sus términos. Por eso se queda en Netlify.
+- El limitador de tasa no debe contar los intentos que bloquea: si los cuenta,
+  el bloqueo se auto-alimenta y nunca expira. Y contar solo por IP deja fuera a
+  clientes reales, porque el móvil colombiano va por CGNAT: la clave es
+  IP+correo.
+- `cart.js` tiene que cargar ANTES del `<script>` en línea que llama a `init()`.
+  Con `defer` corre después y el checkout muestra la bolsa vacía.
+- Las pruebas viven en `netlify/functions/__tests__/`, sin dependencias:
+  `sh netlify/functions/__tests__/correr.sh`.
 - El navegador headless de gstack (`browse.exe`) está bloqueado por App Control
   de Windows en esta máquina. Para capturas: Edge headless
   (`msedge.exe --headless=new --screenshot=...`). Con ventanas muy altas
@@ -104,13 +128,21 @@ Estado al 19 de agosto de 2026. **Nada de esto está en producción todavía.**
   Sin verificar: este entorno no resuelve el DNS de Supabase.
 - Confirmar en Netlify que existen `WOMPI_INTEGRITY_SECRET`,
   `WOMPI_EVENTOS_SECRET` y `SUPABASE_SERVICE_KEY`.
-- Comprobar que la columna `estado` de `pedidos` acepta el valor `'revisar'`
-  (lo escribe el webhook cuando el stock no cuadra). Si hay CHECK o enum que
-  no lo incluya, el webhook devolverá 500 y Wompi reintentará en bucle.
+- Comprobar que la columna `estado` de `pedidos` acepta los cuatro valores:
+  `pendiente`, `procesando`, `pagado`, `revisar`. Si hay CHECK o enum que no
+  los incluya, el webhook devolverá 500 y Wompi reintentará en bucle. Las
+  consultas para verificarlo están en `supabase-seguridad.sql`, sección 5.
+- **Hacer un pedido real de prueba** en cuanto el RLS esté puesto. Los tres
+  bugs de Wompi eran invisibles desde el código: solo un pago de verdad
+  confirma que el pedido pasa a `pagado`, el stock baja y el Pixel registra
+  Purchase.
 - Envío gratis desde 200.000 con el producto más barato en 220.000: el envío
   **nunca** se cobra. Decidir si es intencional.
 - Video del hero: `assets/hero.mp4`. El `<source>` está comentado en
   `index.html`; al añadir el archivo, descomentar.
 - Dominio propio (mejora confianza + verificación en Business Manager).
   Al hacerlo, definir `SITE_URL` en Netlify.
+- Peso: la portada bajó de 11,6 MB a 7,3 MB por visita nueva. Sigue alta para
+  15 GB/mes. `producto.html` está en 9,7 MB. Bajarlas multiplica lo que
+  aguanta el plan gratis.
 - Desplegar: la rama `rediseno-effortless` sigue sin subir a producción.

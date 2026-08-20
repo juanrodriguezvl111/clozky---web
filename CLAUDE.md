@@ -102,6 +102,11 @@ Estado al 19 de agosto de 2026. **Nada de esto está en producción todavía.**
   nada.** Los 13 casos del webhook estaban en verde mientras rechazaba el 100%
   de los eventos reales, porque la prueba imitaba el bug. El formato de un
   tercero se copia de su documentación, o se captura de un evento real.
+- **Supabase Free pausa el proyecto tras 7 días sin actividad**, y con la base
+  pausada el checkout devuelve 503: no se vende, sin aviso. Pasó el 20 de
+  agosto de 2026. Mitigación sin pagar: `.github/workflows/mantener-viva-la-base.yml`
+  consulta la base a diario. GitHub desactiva los cron si el repo pasa 60 días
+  sin commits — avisa por correo, y se reactiva desde la pestaña Actions.
 - Netlify Free (2026) son 300 créditos/mes: ~15 GB de tráfico y ~20 despliegues
   de producción, con tope duro. Al agotarse **se apagan las funciones**, o sea
   el checkout. Vercel Hobby da más, pero prohíbe el uso comercial: una tienda
@@ -122,10 +127,23 @@ Estado al 19 de agosto de 2026. **Nada de esto está en producción todavía.**
 
 ## Pendientes
 
-- **RLS de Supabase — lo único que falta para cerrar el informe.** Ejecutar
-  `supabase-seguridad.sql` en el SQL Editor. `pedidos` guarda correo, nombre,
-  teléfono, cédula y dirección; la anon key es pública y solo RLS protege eso.
-  Sin verificar: este entorno no resuelve el DNS de Supabase.
+- **RLS de Supabase — COMPROBADO el 20 de agosto de 2026, hay agujero.**
+  Con la clave pública anónima:
+  · `pedidos` acepta INSERT. Confirmado: el error es 23502 (NOT NULL de
+    `items`), no 42501 ni "permission denied" — o sea que la autorización
+    pasó y solo lo frenó una restricción de esquema. Cualquiera puede llenar
+    la tabla de pedidos falsos.
+  · `pedidos` en SELECT devuelve 0 filas, pero la tabla está vacía: eso NO
+    distingue entre "RLS te filtra" y "no hay nada". Dado que el INSERT sí
+    está concedido, lo más probable es que el SELECT también.
+  · `inventario` en escritura: BLOQUEADO. Confirmado con un PATCH sobre una
+    fila existente y `Prefer: return=representation` → devuelve `[]`, la
+    escritura no se aplicó. El stock está a salvo.
+  · `inventario` en lectura: abierto, y es intencional.
+  Ejecutar `supabase-seguridad.sql` cierra los dos casos de `pedidos`.
+- `estado` en `pedidos` NO es un enum: acepta cualquier texto en los filtros.
+  Descartado el bloqueo más probable para los valores `procesando` y
+  `revisar`. Podría quedar un CHECK; la consulta está en el SQL, sección 5.
 - Confirmar en Netlify que existen `WOMPI_INTEGRITY_SECRET`,
   `WOMPI_EVENTOS_SECRET` y `SUPABASE_SERVICE_KEY`.
 - Comprobar que la columna `estado` de `pedidos` acepta los cuatro valores:

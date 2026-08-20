@@ -1,0 +1,81 @@
+# =============================================================
+#  MANTENER VIVA LA BASE DE DATOS
+#
+#  Supabase Free pausa un proyecto tras 7 días sin actividad. Con la base
+#  pausada la tienda no puede guardar pedidos: el checkout devuelve 503 y no
+#  se vende nada, sin previo aviso. Ya pasó una vez (agosto de 2026).
+#
+#  Este trabajo hace una consulta diminuta cada día. Con eso el proyecto
+#  cuenta como activo y no se pausa.
+#
+#  Si la consulta falla, el trabajo falla a propósito y GitHub manda un correo:
+#  así esto también sirve de alarma de que la tienda está caída.
+#
+#  La clave anónima NO se guarda como secreto: ya es pública (está en el
+#  JavaScript del sitio, es su diseño). Se lee de inventario.js en cada
+#  ejecución, así nunca se queda desincronizada.
+#
+#  OJO: GitHub desactiva los trabajos programados si el repositorio pasa
+#  60 días sin ningún commit. Avisa por correo antes. Si eso ocurre, entra
+#  a la pestaña Actions y pulsa "Enable workflow", o usa "Run workflow"
+#  (está habilitado abajo) para dispararlo a mano.
+# =============================================================
+name: Mantener viva la base
+
+on:
+  schedule:
+    # Todos los días a las 12:00 UTC (07:00 en Colombia).
+    # Diario y no cada 3 días: sobra presupuesto y no deja margen de error.
+    - cron: '0 12 * * *'
+  workflow_dispatch:        # botón "Run workflow" para dispararlo a mano
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Leer la URL y la clave pública de inventario.js
+        run: |
+          URL=$(grep -oP "SUPABASE_URL\s*=\s*'\K[^']+" inventario.js)
+          KEY=$(grep -oP "SUPABASE_ANON_KEY\s*=\s*'\K[^']+" inventario.js)
+          if [ -z "$URL" ] || [ -z "$KEY" ]; then
+            echo "::error::No pude leer SUPABASE_URL o SUPABASE_ANON_KEY de inventario.js"
+            exit 1
+          fi
+          echo "SUPA_URL=$URL" >> "$GITHUB_ENV"
+          echo "SUPA_KEY=$KEY" >> "$GITHUB_ENV"
+          echo "Apuntando a $URL"
+
+      - name: Despertar la base y comprobar que responde
+        run: |
+          # Un proyecto recién despertado devuelve 521 un rato, y PostgREST
+          # tarda algo más en recargar su caché de esquema. Se reintenta.
+          for i in $(seq 1 10); do
+            RES=$(curl -s -m 20 -w '\n%{http_code}' \
+              -H "apikey: $SUPA_KEY" \
+              "$SUPA_URL/rest/v1/inventario?select=producto_id&limit=1" || true)
+            CODE=$(echo "$RES" | tail -1)
+            BODY=$(echo "$RES" | head -n -1)
+            echo "intento $i -> HTTP $CODE"
+            if [ "$CODE" = "200" ]; then
+              echo "Base viva. Respuesta: $BODY"
+              exit 0
+            fi
+            sleep 20
+          done
+          echo "::error::La base no respondió 200 tras 10 intentos (último: $CODE $BODY)"
+          exit 1
+
+      - name: Comprobar que la tienda carga
+        # Esto NO mantiene nada vivo: es una alarma barata de que el sitio está
+        # en pie. Solo corre si defines la variable SITE_URL del repositorio en
+        # Settings → Secrets and variables → Actions → Variables. Sin ella se
+        # salta, para que el keepalive de la base —que es lo importante— no
+        # falle por una URL desactualizada.
+        if: vars.SITE_URL != ''
+        run: |
+          CODE=$(curl -s -o /dev/null -m 20 -w '%{http_code}' "${{ vars.SITE_URL }}")
+          echo "tienda (${{ vars.SITE_URL }}) -> HTTP $CODE"
+          [ "$CODE" = "200" ] || { echo "::error::La tienda devolvió $CODE"; exit 1; }

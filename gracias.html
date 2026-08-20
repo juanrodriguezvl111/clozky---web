@@ -25,33 +25,33 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
         :root { --black: #000; --white: #fff; --gray-dark: #0f0f0f; --gray-mid: #1a1a1a; --gray-light: #888; --red: #cc0000; --border: rgba(255,255,255,0.1); }
         body { background: var(--black); color: var(--white); font-family: 'Inter', sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 24px; }
-        .logo { font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 0.18em; margin-bottom: 56px; }
+        .logo { font-family: 'Inter', sans-serif; font-weight: 700; font-size: 28px; letter-spacing: -0.02em; margin-bottom: 56px; }
         .logo img { height: 32px; filter: brightness(0) invert(1); object-fit: contain; display: block; }
 
         .card { background: var(--gray-dark); max-width: 560px; width: 100%; padding: 48px; }
         .status-icon { margin-bottom: 28px; }
-        .title { font-family: 'Bebas Neue', sans-serif; font-size: 52px; letter-spacing: 0.04em; line-height: 1; margin-bottom: 10px; }
+        .title { font-family: 'Inter', sans-serif; font-weight: 700; font-size: 52px; letter-spacing: -0.02em; line-height: 1.05; margin-bottom: 10px; }
         .subtitle { font-size: 13px; color: var(--gray-light); line-height: 1.9; margin-bottom: 36px; }
 
         .ref-box { background: var(--gray-mid); padding: 14px 20px; margin-bottom: 36px; }
         .ref-label { font-size: 9px; letter-spacing: 0.4em; text-transform: uppercase; color: var(--gray-light); margin-bottom: 6px; }
-        .ref-val { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 0.06em; }
+        .ref-val { font-family: 'Inter', sans-serif; font-weight: 700; font-size: 22px; letter-spacing: -0.02em; }
 
         .order-items { margin-bottom: 28px; }
         .order-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
         .order-item:last-child { border-bottom: none; }
         .order-item .name { font-weight: 500; }
         .order-item .detail { font-size: 11px; color: var(--gray-light); margin-top: 2px; }
-        .order-item .price { font-family: 'Bebas Neue', sans-serif; font-size: 18px; }
+        .order-item .price { font-family: 'Inter', sans-serif; font-weight: 700; letter-spacing: -0.03em; font-size: 18px; }
 
         .total-row { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-top: 1px solid var(--border); }
         .total-row .label { font-size: 11px; letter-spacing: 0.25em; text-transform: uppercase; }
-        .total-row .val { font-family: 'Bebas Neue', sans-serif; font-size: 26px; }
+        .total-row .val { font-family: 'Inter', sans-serif; font-weight: 700; letter-spacing: -0.03em; font-size: 26px; }
 
         .actions { display: flex; flex-direction: column; gap: 12px; margin-top: 36px; }
         .btn-primary { display: block; text-align: center; padding: 16px; background: var(--white); color: var(--black); text-decoration: none; font-size: 10px; letter-spacing: 0.32em; text-transform: uppercase; font-weight: 700; transition: background 0.3s, color 0.3s; }
@@ -78,16 +78,34 @@
 <script>
     const fmt = n => '$' + Number(n).toLocaleString('es-CO');
 
-    const params  = new URLSearchParams(window.location.search);
-    const status  = params.get('payment-status') || params.get('status');
-    const txId    = params.get('id');
+    const params = new URLSearchParams(window.location.search);
+    /* Wompi redirige con ?id=<transaccion> y NADA MÁS: nunca manda
+       `payment-status` ni `status`. Leerlos daba siempre null, y entonces
+       cualquier pago —incluido uno rechazado— se pintaba como exitoso y
+       vaciaba el carrito, mientras el Purchase del Pixel no se disparaba
+       jamás. El estado hay que preguntárselo a Wompi. */
+    const txId = params.get('id');
 
     let order = null;
     try { order = JSON.parse(localStorage.getItem('clzky_order') || 'null'); } catch(e) {}
 
     const card = document.getElementById('main-card');
 
-    if (status === 'APPROVED' || (!status && order)) {
+    async function estadoReal() {
+        if (!txId) return null;
+        try {
+            const r = await fetch('https://production.wompi.co/v1/transactions/' + encodeURIComponent(txId));
+            if (!r.ok) throw new Error(r.status);
+            const j = await r.json();
+            return j?.data?.status || null;
+        } catch (e) {
+            console.warn('No se pudo confirmar el pago con Wompi', e);
+            return 'DESCONOCIDO';
+        }
+    }
+
+    function pintar(status) {
+    if (status === 'APPROVED') {
         // ── ÉXITO ──
         const itemsHtml = order ? order.items.map(i => `
             <div class="order-item">
@@ -126,8 +144,9 @@
                 <a href="https://www.instagram.com/clozkystudios" target="_blank" class="btn-ghost">Seguirnos en Instagram</a>
             </div>`;
 
-        // Meta Pixel: compra (solo con pago APROBADO, evita Purchase falsos)
-        if (window.fbq && order && status === 'APPROVED') {
+        // Meta Pixel: compra. Aquí el estado ya viene confirmado por la API de
+        // Wompi, no del query string: no hay Purchase falsos.
+        if (window.fbq && order) {
             const CATALOG = { 1: 'CLZ001', 2: 'CLZ002', 3: 'CLZ003' };
             fbq('track', 'Purchase', {
                 content_ids: order.items.map(i => CATALOG[i.productId]).filter(Boolean),
@@ -179,8 +198,19 @@
                 </div>
             </div>`;
 
+    } else if (status === 'DESCONOCIDO') {
+        // No pudimos preguntarle a Wompi. No afirmamos nada ni tocamos el
+        // carrito: mentir en cualquiera de los dos sentidos es peor.
+        card.innerHTML = `
+            <h1 class="title">Pago recibido</h1>
+            <p class="subtitle">Estamos confirmando tu pago con Wompi. Te llega el correo
+               en cuanto quede aprobado. Si tienes dudas, escríbenos por Instagram.</p>
+            <div class="actions">
+                <a href="index.html" class="btn-primary">Ir a la tienda</a>
+            </div>`;
+
     } else {
-        // Sin status — acceso directo
+        // Sin id en la URL — acceso directo
         card.innerHTML = `
             <h1 class="title">Hola</h1>
             <p class="subtitle">Esta página confirma tus pedidos luego de un pago exitoso con Wompi.</p>
@@ -188,6 +218,9 @@
                 <a href="index.html" class="btn-primary">Ir a la tienda</a>
             </div>`;
     }
+    }
+
+    estadoReal().then(pintar);
 </script>
 </body>
 </html>

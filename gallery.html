@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gallery — Clozky</title>
+<link rel="icon" type="image/png" href="assets/mascot.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shell.css">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:#000;color:#fff;font-family:'Inter',system-ui,sans-serif;
+  font-size:14px;line-height:1.6;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+img{display:block;max-width:100%}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+
+/* ── CABECERA DE SALA ── */
+.room-head{
+  max-width:1500px;margin:0 auto;
+  padding:calc(var(--header-h) + clamp(56px,10vw,130px)) clamp(16px,3vw,44px) clamp(40px,7vw,90px);
+  text-align:center;
+}
+.room-head .kicker{font-size:9.5px;letter-spacing:.32em;text-transform:uppercase;color:var(--gray-light)}
+.room-head h1{margin-top:18px;font-size:clamp(38px,8vw,104px);font-weight:700;
+  letter-spacing:-.035em;line-height:.94}
+.room-head p{margin:20px auto 0;max-width:38ch;color:rgba(255,255,255,.6);font-size:14px}
+
+/* ── SALA ── */
+.room{max-width:1500px;margin:0 auto;padding:0 clamp(16px,3vw,44px) clamp(70px,10vw,140px)}
+.rail{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(clamp(240px,26vw,360px),1fr));
+  gap:clamp(34px,5vw,80px) clamp(26px,4vw,60px);
+  align-items:end;
+}
+
+/* ── MARCO ──
+   Moldura real: bisel exterior, paspartú claro, sombra proyectada.
+   Todo con box-shadow y gradientes: cero imágenes, cero peso. */
+.piece{
+  display:block;position:relative;
+  opacity:0;transform:translateY(26px);
+  transition:opacity .8s var(--ease-out),transform .9s var(--ease-out);
+}
+.piece.in{opacity:1;transform:none}
+
+.frame{
+  position:relative;
+  padding:clamp(9px,1vw,14px);                 /* grosor de la moldura */
+  background:
+    linear-gradient(145deg,#3a3a3a 0%,#141414 26%,#242424 52%,#0c0c0c 76%,#2e2e2e 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,.10),      /* filo interno claro */
+    inset 0 2px 5px rgba(255,255,255,.07),      /* luz superior de la moldura */
+    inset 0 -3px 7px rgba(0,0,0,.75),           /* sombra inferior */
+    0 26px 52px rgba(0,0,0,.62),                /* proyectada sobre la pared */
+    0 6px 14px rgba(0,0,0,.5);
+  transition:transform .65s var(--ease-out),box-shadow .65s var(--ease-out);
+}
+/* Paspartú */
+.mat{
+  padding:clamp(14px,1.8vw,28px);
+  background:linear-gradient(170deg,#171717 0%,#0e0e0e 100%);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.055),
+             inset 0 10px 26px rgba(0,0,0,.55);
+}
+.canvas{position:relative;overflow:hidden;background:#0a0a0a}
+.canvas img{width:100%;height:100%;object-fit:cover;display:block;
+  transition:transform 1.1s var(--ease-out),filter .6s ease}
+/* Reflejo de vidrio */
+.canvas::after{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(118deg,
+    rgba(255,255,255,.13) 0%, rgba(255,255,255,.03) 24%,
+    rgba(255,255,255,0) 46%, rgba(255,255,255,0) 100%);
+  opacity:.8;transition:opacity .6s ease;
+}
+
+/* Proporciones variadas: una sala de verdad no tiene todo del mismo tamaño */
+.piece[data-fmt="retrato"]  .canvas{aspect-ratio:3/4}
+.piece[data-fmt="cuadro"]   .canvas{aspect-ratio:1/1}
+.piece[data-fmt="paisaje"]  .canvas{aspect-ratio:4/3}
+.piece[data-fmt="panel"]    .canvas{aspect-ratio:2/3}
+
+@media(hover:hover) and (pointer:fine){
+  .piece:hover .frame{
+    transform:translateY(-6px);
+    box-shadow:
+      inset 0 0 0 1px rgba(255,255,255,.14),
+      inset 0 2px 5px rgba(255,255,255,.09),
+      inset 0 -3px 7px rgba(0,0,0,.75),
+      0 38px 72px rgba(0,0,0,.7),
+      0 10px 20px rgba(0,0,0,.55);
+  }
+  .piece:hover .canvas img{transform:scale(1.035)}
+  .piece:hover .canvas::after{opacity:.42}
+}
+
+/* ── CARTELA (la plaquita del museo) ── */
+.plate{
+  margin-top:16px;padding-left:2px;
+  display:flex;flex-direction:column;gap:3px;
+}
+.plate .no{font-size:9.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--gray-light)}
+.plate .ttl{font-size:13.5px;font-weight:600;letter-spacing:.005em}
+.plate .meta{font-size:11.5px;color:rgba(255,255,255,.5)}
+
+/* ── VISOR ── */
+.viewer{
+  position:fixed;inset:0;z-index:960;
+  display:grid;place-items:center;padding:clamp(20px,5vw,72px);
+  background:rgba(0,0,0,.9);backdrop-filter:blur(14px);
+  opacity:0;pointer-events:none;transition:opacity .4s ease;
+}
+.viewer.is-open{opacity:1;pointer-events:auto}
+.viewer img{max-width:100%;max-height:78svh;object-fit:contain;
+  box-shadow:0 40px 90px rgba(0,0,0,.8);
+  transform:scale(.97);transition:transform .5s var(--ease-out)}
+.viewer.is-open img{transform:none}
+.viewer__plate{margin-top:22px;text-align:center}
+.viewer__plate .ttl{font-size:15px;font-weight:600}
+.viewer__plate .meta{font-size:11.5px;color:rgba(255,255,255,.55);margin-top:4px}
+.viewer__close{
+  position:absolute;top:20px;right:clamp(16px,3vw,40px);
+  font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.7);
+}
+.viewer__close:hover{color:#fff}
+
+footer{border-top:1px solid rgba(255,255,255,.09);padding:32px clamp(16px,3vw,44px);
+  display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;
+  font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--gray-light)}
+
+@media(prefers-reduced-motion:reduce){
+  *{transition-duration:.01ms!important;animation-duration:.01ms!important}
+  .piece{opacity:1;transform:none}
+}
+</style>
+</head>
+<body>
+
+<div class="atmos" aria-hidden="true">
+    <div class="atmos__layer atmos__layer--a"></div>
+    <div class="atmos__layer atmos__layer--b"></div>
+    <div class="atmos__scrim"></div>
+    <div class="atmos__grain"></div>
+</div>
+
+<header class="hdr">
+    <div class="hdr__side">
+        <button class="burger" id="burger" aria-label="Abrir menú" aria-expanded="false" aria-controls="drawer">
+            <span></span><span></span><span></span>
+        </button>
+    </div>
+    <a class="hdr__logo" href="index.html" aria-label="Clozky — inicio"><img src="assets/logo.png" alt="Clozky"></a>
+    <div class="hdr__side hdr__side--right">
+        <button class="cartbtn" onclick="location.href='index.html#shop'" aria-label="Abrir carrito">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M6 7h12l-1.2 11.2a2 2 0 0 1-2 1.8H9.2a2 2 0 0 1-2-1.8L6 7Z"/>
+                <path d="M9 7V5.5a3 3 0 0 1 6 0V7"/>
+            </svg>
+            <span class="cartbtn__n" id="cart-count" data-n="0">0</span>
+        </button>
+    </div>
+</header>
+
+<div class="scrim" id="drawer-scrim"></div>
+<aside class="drawer" id="drawer" aria-hidden="true" aria-label="Menú">
+    <div class="drawer__top">
+        <img src="assets/logo.png" alt="Clozky">
+        <button class="drawer__close" data-drawer-close>Cerrar
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M1 1l10 10M11 1L1 11"/></svg>
+        </button>
+    </div>
+    <div class="drawer__body">
+        <ul class="drawer__primary">
+            <li><a href="producto.html?p=nograce">Best Seller <span class="tag">No Grace</span></a></li>
+            <li><a href="gallery.html">Gallery</a></li>
+            <li><a href="index.html#shop">Shop All</a></li>
+            <li><a href="index.html#lookbook">Lookbook</a></li>
+        </ul>
+        <ul class="drawer__sub">
+            <li><a href="index.html#brand">Nosotros</a></li>
+            <li><a href="https://instagram.com/clozkystudios" target="_blank" rel="noopener">Instagram</a></li>
+            <li><a href="cambios.html">Envíos y cambios</a></li>
+        </ul>
+        <div class="drawer__drop">
+            <span class="lbl">Última cápsula</span>
+            <a class="drawer__card" href="index.html#shop" aria-label="Ver la cápsula Saints or Sinners">
+                <img src="assets/drop-blon.webp" alt="" loading="lazy">
+            </a>
+        </div>
+    </div>
+    <div class="drawer__foot">
+        <a href="index.html#brand">Effortless Boys</a>
+        <a href="cambios.html">Términos</a>
+    </div>
+</aside>
+
+<section class="room-head">
+    <p class="kicker">Clozky Gallery</p>
+    <h1>La sala</h1>
+    <p>Cada imagen es una pieza. Se cuelga, se mira y en algún momento se descuelga.</p>
+</section>
+
+<main class="room">
+    <div class="rail" id="rail"></div>
+</main>
+
+<footer>
+    <span>© 2026 Clozky Studios</span>
+    <span>Effortless Boys</span>
+    <span>Bogotá · Colombia</span>
+</footer>
+
+<div class="viewer" id="viewer" aria-hidden="true">
+    <button class="viewer__close" id="viewer-close">Cerrar ✕</button>
+    <div>
+        <img id="viewer-img" src="" alt="">
+        <div class="viewer__plate">
+            <p class="ttl" id="viewer-ttl"></p>
+            <p class="meta" id="viewer-meta"></p>
+        </div>
+    </div>
+</div>
+
+<script>
+/* ── OBRAS ──
+   Para colgar una pieza nueva: agrega una línea aquí.
+   fmt: retrato | cuadro | paisaje | panel */
+var OBRAS = [
+  { src:'assets/lookbook1.jpg', ttl:'Sin título I',     meta:'Bogotá · 2026',        fmt:'retrato' },
+  { src:'assets/lookbook2.jpg', ttl:'Saints',           meta:'Cápsula 001 · 2026',   fmt:'cuadro'  },
+  { src:'assets/lookbook3.jpg', ttl:'Or Sinners',       meta:'Cápsula 001 · 2026',   fmt:'panel'   },
+  { src:'assets/storefront.webp',ttl:'La esquina',       meta:'Bogotá · 2026',        fmt:'paisaje' },
+  { src:'assets/lookbook4.jpg', ttl:'Effortless',       meta:'Estudio · 2026',       fmt:'retrato' },
+  { src:'assets/lookbook5.jpg', ttl:'Sin título II',    meta:'Bogotá · 2026',        fmt:'cuadro'  },
+  { src:'assets/product2c.jpg', ttl:'No Grace, detalle',meta:'Cápsula 001 · 2026',   fmt:'panel'   },
+  { src:'assets/product3c.jpg', ttl:'Evil, detalle',    meta:'Cápsula 001 · 2026',   fmt:'paisaje' }
+];
+
+var rail = document.getElementById('rail');
+rail.innerHTML = OBRAS.map(function (o, i) {
+  var n = String(i + 1).padStart(3, '0');
+  return '<a class="piece" href="#" data-i="' + i + '" data-fmt="' + o.fmt + '">' +
+           '<div class="frame"><div class="mat"><div class="canvas">' +
+             '<img src="' + o.src + '" alt="' + o.ttl + '" loading="lazy">' +
+           '</div></div></div>' +
+           '<div class="plate">' +
+             '<span class="no">' + n + '</span>' +
+             '<span class="ttl">' + o.ttl + '</span>' +
+             '<span class="meta">' + o.meta + '</span>' +
+           '</div>' +
+         '</a>';
+}).join('');
+
+/* Colgado progresivo: las piezas aparecen a medida que se recorre la sala */
+var obs = new IntersectionObserver(function (entries) {
+  entries.forEach(function (e) {
+    if (!e.isIntersecting) return;
+    e.target.classList.add('in');
+    obs.unobserve(e.target);
+  });
+}, { rootMargin: '0px 0px -10% 0px', threshold: 0.08 });
+
+document.querySelectorAll('.piece').forEach(function (el, i) {
+  el.style.transitionDelay = Math.min((i % 4) * 60, 180) + 'ms';
+  obs.observe(el);
+});
+
+/* Visor */
+var viewer = document.getElementById('viewer');
+rail.addEventListener('click', function (e) {
+  var a = e.target.closest('.piece');
+  if (!a) return;
+  e.preventDefault();
+  var o = OBRAS[+a.dataset.i];
+  document.getElementById('viewer-img').src = o.src;
+  document.getElementById('viewer-img').alt = o.ttl;
+  document.getElementById('viewer-ttl').textContent = o.ttl;
+  document.getElementById('viewer-meta').textContent = o.meta;
+  viewer.classList.add('is-open');
+  viewer.setAttribute('aria-hidden', 'false');
+  if (window.ClozkyScroll) window.ClozkyScroll.lock();
+});
+function closeViewer() {
+  viewer.classList.remove('is-open');
+  viewer.setAttribute('aria-hidden', 'true');
+  if (window.ClozkyScroll) window.ClozkyScroll.unlock();
+}
+document.getElementById('viewer-close').onclick = closeViewer;
+viewer.addEventListener('click', function (e) { if (e.target === viewer) closeViewer(); });
+document.addEventListener('keydown', function (e) {
+  if (e.key === 'Escape' && viewer.classList.contains('is-open')) closeViewer();
+});
+</script>
+<script src="cart.js" defer></script>
+<script src="shell.js" defer></script>
+</body>
+</html>

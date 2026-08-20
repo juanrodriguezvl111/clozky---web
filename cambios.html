@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Envíos y cambios — Clozky</title>
+<meta name="description" content="Política de envíos y cambios de Clozky Studios. Cambios únicamente por defecto de fábrica.">
+<link rel="icon" type="image/png" href="assets/mascot.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shell.css">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:#000;color:#fff;font-family:'Inter',system-ui,sans-serif;
+  font-size:15px;line-height:1.65;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+img{display:block;max-width:100%}
+a{color:inherit}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+
+.doc{max-width:760px;margin:0 auto;
+  padding:calc(var(--header-h) + clamp(48px,9vw,110px)) clamp(20px,5vw,32px) clamp(70px,10vw,130px)}
+
+.doc__kicker{font-size:9.5px;letter-spacing:.32em;text-transform:uppercase;color:var(--gray-light)}
+.doc h1{margin-top:16px;font-size:clamp(34px,7vw,72px);font-weight:700;
+  letter-spacing:-.04em;line-height:.96}
+.doc__lede{margin-top:22px;font-size:16px;color:rgba(255,255,255,.72);max-width:52ch}
+.doc__updated{margin-top:14px;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--gray-light)}
+
+section{margin-top:clamp(44px,7vw,76px);padding-top:clamp(26px,4vw,38px);
+  border-top:1px solid rgba(255,255,255,.11)}
+section h2{font-size:11px;letter-spacing:.24em;text-transform:uppercase;
+  color:var(--gray-light);font-weight:500;margin-bottom:18px}
+section h3{font-size:19px;font-weight:600;letter-spacing:-.015em;margin-bottom:10px}
+section p{color:rgba(255,255,255,.74);max-width:58ch}
+section p + p{margin-top:12px}
+
+ul{list-style:none;margin-top:16px;display:grid;gap:12px}
+li{display:grid;grid-template-columns:20px 1fr;gap:12px;align-items:start;
+  color:rgba(255,255,255,.74);max-width:56ch}
+li .mk{font-weight:700;line-height:1.5}
+li.yes .mk{color:#4ea564}
+li.no  .mk{color:var(--red)}
+
+.callout{
+  margin-top:24px;padding:20px 22px;
+  background:rgba(255,255,255,.045);
+  border:1px solid rgba(255,255,255,.10);
+  border-left:2px solid var(--red);
+}
+.callout p{color:rgba(255,255,255,.8);max-width:none}
+.callout strong{color:#fff;font-weight:600}
+
+.steps{counter-reset:s;margin-top:18px;display:grid;gap:16px}
+.step{display:grid;grid-template-columns:26px 1fr;gap:14px;align-items:start}
+.step::before{
+  counter-increment:s;content:counter(s,decimal-leading-zero);
+  font-size:10px;letter-spacing:.14em;color:var(--gray-light);padding-top:4px;
+}
+.step p{max-width:52ch}
+
+.contact{
+  margin-top:clamp(44px,7vw,76px);padding:clamp(24px,4vw,34px);
+  background:rgba(255,255,255,.045);
+  border:1px solid rgba(255,255,255,.10);
+  text-align:center;
+}
+.contact p{margin:0 auto;max-width:44ch}
+.contact a.cta{
+  display:inline-block;margin-top:20px;padding:15px 40px;
+  background:#fff;color:#000;text-decoration:none;
+  font-size:10px;letter-spacing:.24em;text-transform:uppercase;font-weight:700;
+  transition:transform 160ms var(--ease-out);
+}
+.contact a.cta:active{transform:scale(.98)}
+
+footer{border-top:1px solid rgba(255,255,255,.09);padding:30px clamp(20px,5vw,44px);
+  display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap;
+  font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--gray-light)}
+footer a{text-decoration:none}
+footer a:hover{color:#fff}
+</style>
+</head>
+<body>
+
+<div class="atmos" aria-hidden="true">
+    <div class="atmos__layer atmos__layer--a"></div>
+    <div class="atmos__layer atmos__layer--b"></div>
+    <div class="atmos__scrim"></div>
+    <div class="atmos__grain"></div>
+</div>
+
+<header class="hdr">
+    <div class="hdr__side">
+        <button class="burger" id="burger" aria-label="Abrir menú" aria-expanded="false" aria-controls="drawer">
+            <span></span><span></span><span></span>
+        </button>
+    </div>
+    <a class="hdr__logo" href="index.html" aria-label="Clozky — inicio"><img src="assets/logo.png" alt="Clozky"></a>
+    <div class="hdr__side hdr__side--right">
+        <button class="cartbtn" onclick="location.href='index.html#shop'" aria-label="Ir a la tienda">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M6 7h12l-1.2 11.2a2 2 0 0 1-2 1.8H9.2a2 2 0 0 1-2-1.8L6 7Z"/>
+                <path d="M9 7V5.5a3 3 0 0 1 6 0V7"/>
+            </svg>
+            <span class="cartbtn__n" id="cart-count" data-n="0">0</span>
+        </button>
+    </div>
+</header>
+
+<div class="scrim" id="drawer-scrim"></div>
+<aside class="drawer" id="drawer" aria-hidden="true" aria-label="Menú">
+    <div class="drawer__top">
+        <img src="assets/logo.png" alt="Clozky">
+        <button class="drawer__close" data-drawer-close>Cerrar
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M1 1l10 10M11 1L1 11"/></svg>
+        </button>
+    </div>
+    <div class="drawer__body">
+        <ul class="drawer__primary">
+            <li><a href="producto.html?p=nograce">Best Seller <span class="tag">No Grace</span></a></li>
+            <li><a href="gallery.html">Gallery</a></li>
+            <li><a href="index.html#shop">Shop All</a></li>
+            <li><a href="index.html#lookbook">Lookbook</a></li>
+        </ul>
+        <ul class="drawer__sub">
+            <li><a href="index.html#brand">Nosotros</a></li>
+            <li><a href="https://instagram.com/clozkystudios" target="_blank" rel="noopener">Instagram</a></li>
+            <li><a href="cambios.html">Envíos y cambios</a></li>
+        </ul>
+        <div class="drawer__drop">
+            <span class="lbl">Última cápsula</span>
+            <a class="drawer__card" href="index.html#shop" aria-label="Ver la cápsula Saints or Sinners">
+                <img src="assets/drop-blon.webp" alt="" loading="lazy">
+            </a>
+        </div>
+    </div>
+    <div class="drawer__foot">
+        <a href="index.html#brand">Effortless Boys</a>
+        <a href="cambios.html">Términos</a>
+    </div>
+</aside>
+
+<main class="doc">
+    <p class="doc__kicker">Clozky Studios</p>
+    <h1>Envíos y cambios</h1>
+    <p class="doc__lede">Trabajamos en tiradas cortas. Cada pieza sale revisada una por una
+        antes de empacarse. Esto es lo que cubrimos y lo que no.</p>
+    <p class="doc__updated">Vigente desde el 19 de agosto de 2026</p>
+
+    <section>
+        <h2>Envíos</h2>
+        <h3>Cobertura y tiempos</h3>
+        <p>Enviamos a todo el territorio nacional. El pedido sale de Bogotá dentro de
+            las 24 horas hábiles siguientes a la confirmación del pago.</p>
+        <p>Entrega estimada: 2 a 4 días hábiles en ciudades principales y 3 a 7 días
+            hábiles en el resto del país. Son estimados de la transportadora, no
+            garantías nuestras.</p>
+        <p>Costo de envío: $12.000. Gratis en compras desde $200.000.</p>
+        <p>Apenas despachamos te enviamos el número de guía. La dirección se registra
+            tal como la escribes en el checkout: revísala antes de pagar, porque una
+            vez despachado no podemos redirigir el paquete.</p>
+    </section>
+
+    <section>
+        <h2>Cambios</h2>
+        <h3>Solo por defecto de fábrica</h3>
+
+        <div class="callout">
+            <p><strong>Clozky no hace cambios por talla, por arrepentimiento ni porque
+                la prenda no te haya quedado como esperabas.</strong> Trabajamos en
+                tiradas cortas y no reponemos: una prenda que vuelve es una prenda que
+                otra persona ya no pudo tener. Por eso publicamos la guía de tallas con
+                las medidas reales de cada prenda y la talla que usa el modelo. Mídela
+                antes de comprar.</p>
+        </div>
+
+        <p style="margin-top:24px">Sí cambiamos una prenda cuando llega con un defecto
+            de fabricación. Estos son los casos:</p>
+
+        <ul>
+            <li class="yes"><span class="mk">✓</span><span>Costuras abiertas, sueltas o mal rematadas.</span></li>
+            <li class="yes"><span class="mk">✓</span><span>Estampado descentrado, agrietado, incompleto o que se desprende.</span></li>
+            <li class="yes"><span class="mk">✓</span><span>Huecos, manchas o daños en la tela presentes al abrir el paquete.</span></li>
+            <li class="yes"><span class="mk">✓</span><span>Talla equivocada respecto a la que aparece en tu pedido.</span></li>
+            <li class="yes"><span class="mk">✓</span><span>Prenda distinta a la que compraste.</span></li>
+        </ul>
+
+        <p style="margin-top:26px">Estos casos no aplican:</p>
+
+        <ul>
+            <li class="no"><span class="mk">✕</span><span>La talla no te quedó como esperabas.</span></li>
+            <li class="no"><span class="mk">✕</span><span>Cambiaste de opinión sobre el diseño o el color.</span></li>
+            <li class="no"><span class="mk">✕</span><span>Daño por uso, lavado incorrecto o secadora.</span></li>
+            <li class="no"><span class="mk">✕</span><span>Prenda usada, lavada, alterada o sin etiqueta.</span></li>
+            <li class="no"><span class="mk">✕</span><span>Reclamo después de los 5 días calendario desde la entrega.</span></li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>Cómo reclamar</h2>
+        <h3>Cinco días, tres pasos</h3>
+        <div class="steps">
+            <div class="step"><p>Escríbenos por WhatsApp o Instagram dentro de los
+                <strong>5 días calendario</strong> siguientes a recibir el pedido.</p></div>
+            <div class="step"><p>Envía tu número de pedido y fotos del defecto: una
+                general de la prenda completa y una de cerca del daño, con luz clara.</p></div>
+            <div class="step"><p>Si el defecto se confirma, coordinamos la recogida.
+                <strong>El envío de ida y vuelta corre por nuestra cuenta.</strong></p></div>
+        </div>
+        <p style="margin-top:22px">Reemplazamos la prenda por la misma referencia y talla.
+            Si no hay stock disponible, eliges otra pieza del mismo valor o te devolvemos
+            el dinero por el mismo medio de pago.</p>
+        <p>La prenda debe volver sin usar, sin lavar y con la etiqueta puesta.</p>
+    </section>
+
+    <section>
+        <h2>Cuidado de la prenda</h2>
+        <h3>Para que dure</h3>
+        <p>Lavar a máquina en frío, del revés, en ciclo suave. No usar blanqueador.
+            No secadora. No planchar sobre el estampado.</p>
+        <p>El daño causado por no seguir estas indicaciones no se cubre.</p>
+    </section>
+
+    <section>
+        <h2>Tus derechos</h2>
+        <h3>Marco legal</h3>
+        <p>Esta política se suma a la garantía legal establecida en la Ley 1480 de 2011
+            (Estatuto del Consumidor) de Colombia y no la reemplaza ni la limita.
+            El derecho de retracto para ventas a distancia aplica en los términos y
+            plazos que la ley establece.</p>
+    </section>
+
+    <div class="contact">
+        <p>¿Algún problema con tu pedido? Escríbenos y lo resolvemos.</p>
+        <a class="cta" href="https://wa.me/573000000000" target="_blank" rel="noopener">Escribir por WhatsApp</a>
+    </div>
+</main>
+
+<footer>
+    <span>© 2026 Clozky Studios</span>
+    <span>Effortless Boys</span>
+    <span><a href="index.html">Volver a la tienda</a></span>
+</footer>
+
+<script src="cart.js" defer></script>
+<script src="shell.js" defer></script>
+</body>
+</html>

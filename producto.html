@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Worthless Sacrifice — Clozky</title>
+<link rel="icon" type="image/png" href="assets/mascot.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shell.css">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --black:#000; --white:#fff; --gray-dark:#0f0f0f; --gray-mid:#1a1a1a; --gray-light:#888;
+  --red:#E10600;
+  --ease-out:cubic-bezier(0.23,1,0.32,1);
+  --glass-bg:rgba(20,20,20,0.42); --glass-brd:rgba(255,255,255,0.12); --glass-hi:rgba(255,255,255,0.20);
+}
+html{scroll-behavior:smooth}
+body{background:var(--black);color:var(--white);font-family:'Inter',system-ui,sans-serif;
+  font-size:14px;line-height:1.6;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+img{display:block;max-width:100%}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+
+/* ── LAYOUT PDP ── */
+.pdp{display:grid;grid-template-columns:minmax(0,1fr) 430px;
+  gap:clamp(20px,3vw,56px);
+  max-width:1500px;margin:0 auto;padding:calc(var(--header-h) + 26px) clamp(16px,3vw,44px) 0}
+
+/* Columna izquierda: galería que se recorre con scroll */
+.gallery{display:grid;gap:clamp(8px,1vw,14px)}
+.shot{position:relative;background:rgba(255,255,255,.03);overflow:hidden;aspect-ratio:4/5;
+  opacity:0;transform:translateY(22px) scale(.995);
+  transition:opacity .7s var(--ease-out),transform .8s var(--ease-out)}
+.shot.in{opacity:1;transform:none}
+.shot img{width:100%;height:100%;object-fit:cover}
+/* Recortes con transparencia: se ven enteros y flotan sobre el fondo del sitio */
+.shot--cut{background:transparent;overflow:visible}
+.shot--cut img{object-fit:contain;padding:clamp(10px,2.5vw,34px);
+  filter:drop-shadow(0 26px 40px rgba(0,0,0,.5))}
+.shot-tag{position:absolute;top:12px;left:12px;z-index:2;
+  padding:5px 11px;border-radius:100px;font-size:9px;letter-spacing:.2em;text-transform:uppercase;
+  background:rgba(0,0,0,.5);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.12);
+  color:rgba(255,255,255,.82)}
+
+/* Columna derecha: pegada */
+.info{position:sticky;top:calc(var(--header-h) + 26px);align-self:start;height:fit-content;
+  padding-bottom:60px}
+.eyebrow{font-size:9.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--gray-light)}
+.p-name{font-size:clamp(24px,2.4vw,32px);font-weight:600;letter-spacing:-.015em;line-height:1.12;margin-top:10px}
+.p-price{font-size:16px;color:var(--gray-light);margin-top:8px}
+
+.block{margin-top:26px}
+.block-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
+.link-sm{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--gray-light);
+  border-bottom:1px solid rgba(255,255,255,.16);padding-bottom:2px;transition:color .2s,border-color .2s}
+.link-sm:hover{color:var(--white);border-color:var(--white)}
+
+.sizes{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.sz{padding:14px 0;text-align:center;font-size:12px;letter-spacing:.1em;
+  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.12);
+  transition:background 180ms ease,border-color 180ms ease,transform 140ms var(--ease-out)}
+.sz:active{transform:scale(.97)}
+.sz[aria-pressed="true"]{background:var(--white);color:var(--black);border-color:var(--white);font-weight:600}
+.sz[disabled]{opacity:.28;cursor:not-allowed;text-decoration:line-through}
+@media(hover:hover) and (pointer:fine){.sz:hover:not([disabled]):not([aria-pressed="true"]){background:rgba(255,255,255,.09);border-color:rgba(255,255,255,.28)}}
+.sz-note{font-size:11px;color:var(--red);margin-top:9px;min-height:16px;letter-spacing:.06em}
+
+.add{width:100%;margin-top:22px;padding:17px;background:var(--white);color:var(--black);
+  font-size:10.5px;letter-spacing:.24em;text-transform:uppercase;font-weight:700;
+  transition:transform 160ms var(--ease-out),opacity .2s}
+.add:active{transform:scale(.985)}
+.add[disabled]{opacity:.4;cursor:not-allowed}
+.assure{display:flex;gap:16px;justify-content:center;margin-top:12px;
+  font-size:10px;letter-spacing:.1em;color:var(--gray-light)}
+
+.ir-bolsa{display:block;margin-top:14px;text-align:center;
+  font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;
+  color:#fff;border-bottom:1px solid rgba(255,255,255,.3);padding-bottom:6px}
+.ir-bolsa:hover{border-color:#fff}
+.desc{font-size:13.5px;color:rgba(255,255,255,.72);margin-top:26px;max-width:46ch}
+
+/* Acordeones */
+.acc{margin-top:30px;border-top:1px solid rgba(255,255,255,.10)}
+.acc-item{border-bottom:1px solid rgba(255,255,255,.10)}
+.acc-btn{width:100%;display:flex;justify-content:space-between;align-items:center;
+  padding:16px 0;font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;text-align:left}
+.acc-btn .sign{position:relative;width:11px;height:11px;flex:0 0 11px}
+.acc-btn .sign::before,.acc-btn .sign::after{content:'';position:absolute;background:currentColor;
+  transition:transform 260ms var(--ease-out),opacity 200ms ease}
+.acc-btn .sign::before{top:5px;left:0;width:11px;height:1px}
+.acc-btn .sign::after{left:5px;top:0;width:1px;height:11px}
+.acc-item.open .sign::after{transform:scaleY(0);opacity:0}
+.acc-panel{overflow:hidden;height:0;transition:height 340ms var(--ease-out)}
+.acc-inner{padding:0 0 18px;font-size:13px;color:rgba(255,255,255,.66)}
+.acc-inner table{width:100%;border-collapse:collapse;font-size:12.5px}
+.acc-inner th,.acc-inner td{padding:9px 6px;text-align:left;border-bottom:1px solid rgba(255,255,255,.08)}
+.acc-inner th{font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--gray-light);font-weight:400}
+.acc-inner p+p{margin-top:10px}
+
+/* Relacionados */
+.more{max-width:1500px;margin:clamp(60px,9vw,120px) auto 0;padding:0 clamp(16px,3vw,44px) 100px}
+.more-head{display:flex;justify-content:space-between;align-items:baseline;
+  padding-bottom:14px;border-bottom:1px solid rgba(255,255,255,.10);margin-bottom:26px}
+.more-head h2{font-size:13px;letter-spacing:.2em;text-transform:uppercase;font-weight:500}
+.more-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:clamp(16px,2.4vw,38px)}
+.mini img{aspect-ratio:3/4;object-fit:contain;width:100%;padding:10px;
+  background:transparent;
+  filter:drop-shadow(0 18px 26px rgba(0,0,0,.45));
+  transition:transform .7s var(--ease-out)}
+.mini{overflow:hidden}
+.mini-media{overflow:hidden}
+@media(hover:hover) and (pointer:fine){.mini:hover img{transform:scale(1.04)}}
+.mini-info{padding-top:14px;display:flex;flex-direction:column;gap:3px}
+.mini-sub{font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--gray-light)}
+.mini-name{font-size:13px;font-weight:500}
+.mini-price{font-size:12.5px;color:var(--gray-light)}
+
+footer{border-top:1px solid rgba(255,255,255,.09);padding:34px clamp(16px,3vw,44px);
+  display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;
+  font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--gray-light)}
+
+@media(max-width:1024px){
+  .pdp{grid-template-columns:1fr;padding-top:92px}
+  .info{position:static;padding-bottom:0}
+  .more-grid{grid-template-columns:repeat(2,1fr)}
+  /* En móvil: barra de compra fija abajo */
+  .buybar{position:fixed;left:0;right:0;bottom:0;z-index:900;
+    display:flex;align-items:center;gap:12px;padding:12px 14px;
+    background:var(--glass-bg);backdrop-filter:blur(22px) saturate(170%);
+    -webkit-backdrop-filter:blur(22px) saturate(170%);
+    border-top:1px solid var(--glass-brd)}
+  .buybar .bb-meta{flex:1;min-width:0}
+  .buybar .bb-name{font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .buybar .bb-price{font-size:11px;color:var(--gray-light)}
+  .buybar .add{margin:0;width:auto;padding:14px 22px;flex:0 0 auto}
+  body{padding-bottom:74px}
+}
+.buybar{display:none}
+@media(max-width:1024px){.buybar{display:flex}}
+
+@media(prefers-reduced-motion:reduce){
+  *{transition-duration:.01ms!important;animation-duration:.01ms!important;scroll-behavior:auto!important}
+  .shot{opacity:1;transform:none}
+}
+</style>
+</head>
+<body>
+<div class="atmos" aria-hidden="true">
+    <div class="atmos__layer atmos__layer--a"></div>
+    <div class="atmos__layer atmos__layer--b"></div>
+    <div class="atmos__scrim"></div>
+    <div class="atmos__grain"></div>
+</div>
+
+<header class="hdr">
+    <div class="hdr__side">
+        <button class="burger" id="burger" aria-label="Abrir menú" aria-expanded="false" aria-controls="drawer">
+            <span></span><span></span><span></span>
+        </button>
+    </div>
+    <a class="hdr__logo" href="index.html" aria-label="Clozky — inicio"><img src="assets/logo.png" alt="Clozky"></a>
+    <div class="hdr__side hdr__side--right">
+        <button class="cartbtn" onclick="location.href='checkout.html'" aria-label="Ver la bolsa">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M6 7h12l-1.2 11.2a2 2 0 0 1-2 1.8H9.2a2 2 0 0 1-2-1.8L6 7Z"/>
+                <path d="M9 7V5.5a3 3 0 0 1 6 0V7"/>
+            </svg>
+            <span class="cartbtn__n" id="cart-count" data-n="0">0</span>
+        </button>
+    </div>
+</header>
+
+<div class="scrim" id="drawer-scrim"></div>
+<aside class="drawer" id="drawer" aria-hidden="true" aria-label="Menú">
+    <div class="drawer__top">
+        <img src="assets/logo.png" alt="Clozky">
+        <button class="drawer__close" data-drawer-close>Cerrar
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M1 1l10 10M11 1L1 11"/></svg>
+        </button>
+    </div>
+    <div class="drawer__body">
+        <ul class="drawer__primary">
+            <li><a href="producto.html?p=nograce">Best Seller <span class="tag">No Grace</span></a></li>
+            <li><a href="gallery.html">Gallery</a></li>
+            <li><a href="index.html#shop">Shop All</a></li>
+            <li><a href="index.html#lookbook">Lookbook</a></li>
+        </ul>
+        <ul class="drawer__sub">
+            <li><a href="index.html#brand">Nosotros</a></li>
+            <li><a href="https://instagram.com/clozkystudios" target="_blank" rel="noopener">Instagram</a></li>
+            <li><a href="cambios.html">Envíos y cambios</a></li>
+        </ul>
+        <div class="drawer__drop">
+            <span class="lbl">Última cápsula</span>
+            <a class="drawer__card" href="index.html#shop" aria-label="Ver la cápsula Saints or Sinners">
+                <img src="assets/drop-blon.webp" alt="" loading="lazy">
+            </a>
+        </div>
+    </div>
+    <div class="drawer__foot">
+        <a href="index.html#brand">Effortless Boys</a>
+        <a href="cambios.html">Términos</a>
+    </div>
+</aside>
+
+<main class="pdp">
+
+  <!-- GALERÍA: se recorre con scroll, distintos ángulos -->
+  <div class="gallery">
+    <figure class="shot"><span class="shot-tag">Frente</span><img src="assets/product1.jpg" alt="Worthless Sacrifice — frente" fetchpriority="high"></figure>
+    <figure class="shot"><span class="shot-tag">Espalda</span><img src="assets/product1b.jpg" alt="Worthless Sacrifice — espalda" loading="lazy"></figure>
+    <figure class="shot"><span class="shot-tag">En modelo</span><img src="assets/lookbook1.jpg" alt="Worthless Sacrifice en modelo" loading="lazy"></figure>
+    <figure class="shot"><span class="shot-tag">Detalle</span><img src="assets/product2c.jpg" alt="Detalle de la prenda" loading="lazy"></figure>
+    <figure class="shot"><span class="shot-tag">Caída</span><img src="assets/lookbook3.jpg" alt="Caída de la prenda" loading="lazy"></figure>
+  </div>
+
+  <!-- INFO: pegada mientras se recorre la galería -->
+  <aside class="info">
+    <p class="eyebrow">Saints or Sinners — 001</p>
+    <h1 class="p-name">Worthless Sacrifice</h1>
+    <p class="p-price">$260.000</p>
+
+    <div class="block">
+      <div class="block-head">
+        <span class="eyebrow">Talla</span>
+        <button class="link-sm" data-open="guia">Guía de tallas</button>
+      </div>
+      <div class="sizes" id="sizes">
+        <button class="sz" aria-pressed="false" data-q="2">S</button>
+        <button class="sz" aria-pressed="false" data-q="5">M</button>
+        <button class="sz" aria-pressed="false" data-q="4">L</button>
+        <button class="sz" aria-pressed="false" data-q="0" disabled>XL</button>
+      </div>
+      <p class="sz-note" id="sz-note"></p>
+    </div>
+
+    <button class="add" id="add" disabled>Selecciona tu talla</button>
+    <div class="assure"><span>Envío 2–4 días</span><span>Cambio de talla gratis</span></div>
+    <a class="ir-bolsa" id="ir-bolsa" href="checkout.html" hidden>Ir a la bolsa &rarr;</a>
+
+    <p class="desc">Corte oversize que cae solo. La primera pieza de Saints or Sinners.
+      Hecha en Colombia en tirada corta: cuando se acaba, no vuelve.</p>
+
+    <div class="acc">
+      <div class="acc-item">
+        <button class="acc-btn">Detalles <span class="sign"></span></button>
+        <div class="acc-panel"><div class="acc-inner">
+          <p>Corte oversize, hombro caído, caída recta.</p>
+          <p>Lavar en frío, del revés. No usar secadora.</p>
+        </div></div>
+      </div>
+      <div class="acc-item" id="guia">
+        <button class="acc-btn">Guía de tallas <span class="sign"></span></button>
+        <div class="acc-panel"><div class="acc-inner">
+          <table>
+            <thead><tr><th>Talla</th><th>Pecho</th><th>Largo</th><th>Hombro</th></tr></thead>
+            <tbody>
+              <tr><td>S</td><td>54 cm</td><td>70 cm</td><td>52 cm</td></tr>
+              <tr><td>M</td><td>57 cm</td><td>72 cm</td><td>55 cm</td></tr>
+              <tr><td>L</td><td>60 cm</td><td>74 cm</td><td>58 cm</td></tr>
+              <tr><td>XL</td><td>63 cm</td><td>76 cm</td><td>61 cm</td></tr>
+            </tbody>
+          </table>
+          <p style="margin-top:12px">Medidas de la prenda, no del cuerpo. El modelo mide 1,78 m y usa M.
+            Entre dos tallas, quédate con la menor: el corte ya viene amplio.</p>
+        </div></div>
+      </div>
+      <div class="acc-item">
+        <button class="acc-btn">Envíos y cambios <span class="sign"></span></button>
+        <div class="acc-panel"><div class="acc-inner">
+          <p>Envío nacional 2–4 días hábiles. Gratis desde $200.000.</p>
+          <p>Cambio de talla gratis dentro de los 15 días, con la etiqueta puesta.</p>
+        </div></div>
+      </div>
+    </div>
+  </aside>
+</main>
+
+<section class="more">
+  <div class="more-head">
+    <h2>Sigue en la cápsula</h2>
+    <a class="link-sm" href="index.html#shop">Ver todo</a>
+  </div>
+  <div class="more-grid" id="more-grid"></div>
+</section>
+
+<footer>
+  <span>© 2026 Clozky Studios</span>
+  <span>Effortless Boys</span>
+  <span>Pago seguro · Wompi</span>
+</footer>
+
+<!-- Barra de compra fija (móvil) -->
+<div class="buybar">
+  <div class="bb-meta">
+    <p class="bb-name">Worthless Sacrifice</p>
+    <p class="bb-price">$260.000</p>
+  </div>
+  <button class="add" id="add-mobile" disabled>Añadir</button>
+</div>
+
+<script>
+/* ── Catálogo: la página se arma según ?p=slug ── */
+var CATALOGO = {
+  nograce: {
+    id: 2, priceNum: 220000,
+    eyebrow: 'Saints or Sinners — 002',
+    name: 'No Grace',
+    price: '$220.000',
+    desc: 'La pieza más silenciosa de la cápsula. Corte oversize que cae solo. ' +
+          'Hecha en Colombia en tirada corta: cuando se acaba, no vuelve.',
+    stock: { S: 0, M: 3, L: 6, XL: 2 },
+    shots: [
+      ['Frente',    'assets/product2-cut.webp',  'cut'],
+      ['Espalda',   'assets/product2b-cut.webp', 'cut'],
+      ['En modelo', 'assets/product2c.jpg',      'foto'],
+      ['Detalle',   'assets/product2d.jpg',      'foto']
+    ]
+  },
+  worthless: {
+    id: 1, priceNum: 260000,
+    eyebrow: 'Saints or Sinners — 001',
+    name: 'Worthless Sacrifice',
+    price: '$260.000',
+    desc: 'La primera pieza de Saints or Sinners. Corte oversize que cae solo. ' +
+          'Hecha en Colombia en tirada corta: cuando se acaba, no vuelve.',
+    stock: { S: 2, M: 5, L: 4, XL: 0 },
+    shots: [
+      ['Frente',    'assets/product1-cut.webp',  'cut'],
+      ['Espalda',   'assets/product1b-cut.webp', 'cut'],
+      ['En modelo', 'assets/lookbook1.jpg',      'foto'],
+      ['Caída',     'assets/lookbook3.jpg',      'foto']
+    ]
+  },
+  devil: {
+    id: 3, priceNum: 240000,
+    eyebrow: 'Saints or Sinners — 003',
+    name: 'Devil’s F*cking Evil',
+    price: '$240.000',
+    desc: 'Para los que ya saben. Corte oversize que cae solo. ' +
+          'Hecha en Colombia en tirada corta: cuando se acaba, no vuelve.',
+    stock: { S: 4, M: 1, L: 3, XL: 5 },
+    shots: [
+      ['Frente',    'assets/product3-cut.webp',  'cut'],
+      ['Espalda',   'assets/product3b-cut.webp', 'cut'],
+      ['En modelo', 'assets/product3c.jpg',      'foto'],
+      ['Detalle',   'assets/product3d.jpg',      'foto']
+    ]
+  }
+};
+
+const add   = document.getElementById('add');
+const addM  = document.getElementById('add-mobile');
+let picked  = null;
+
+var slug = new URLSearchParams(location.search).get('p') || 'nograce';
+var P = CATALOGO[slug] || CATALOGO.nograce;
+
+document.title = P.name + ' — Clozky';
+document.querySelector('.eyebrow').textContent = P.eyebrow;
+document.querySelector('.p-name').textContent  = P.name;
+document.querySelector('.p-price').textContent = P.price;
+document.querySelector('.desc').textContent    = P.desc;
+document.querySelector('.bb-name').textContent = P.name;
+document.querySelector('.bb-price').textContent = P.price;
+
+document.querySelector('.gallery').innerHTML = P.shots.map(function (sh, i) {
+  return '<figure class="shot shot--' + sh[2] + '">' +
+           '<span class="shot-tag">' + sh[0] + '</span>' +
+           '<img src="' + sh[1] + '" alt="' + P.name + ' — ' + sh[0] + '" ' +
+             (i === 0 ? 'fetchpriority="high"' : 'loading="lazy"') + '>' +
+         '</figure>';
+}).join('');
+
+/* Pinta las tallas. `fuente` permite repintar cuando llega el stock real. */
+function pintarTallas(fuente) {
+  document.getElementById('sizes').innerHTML = Object.keys(P.stock).map(function (t) {
+    var q = fuente ? fuente(P.id, t) : P.stock[t];
+    return '<button class="sz" aria-pressed="false" data-q="' + q + '"' +
+           (q ? '' : ' disabled') + '>' + t + '</button>';
+  }).join('');
+}
+pintarTallas(typeof stockDe === 'function' ? stockDe : null);
+
+/* El stock real vive en Supabase. Repintamos cuando responda, y
+   soltamos la talla elegida si mientras tanto se agotó. */
+if (typeof sincronizarInventario === 'function') {
+  sincronizarInventario().then(function () {
+    var antes = picked;
+    pintarTallas(stockDe);
+    if (antes && stockDe(P.id, antes) > 0) {
+      var b = [].filter.call(document.getElementById('sizes').children,
+                             function (x) { return x.textContent.trim() === antes; })[0];
+      if (b) b.setAttribute('aria-pressed', 'true');
+    } else if (antes) {
+      picked = null;
+      document.getElementById('sz-note').textContent = 'Esa talla se acabó';
+      add.disabled = true;  add.textContent  = 'Selecciona tu talla';
+      addM.disabled = true; addM.textContent = 'Añadir';
+    }
+  });
+}
+
+/* ── Relacionados: se arman solos y nunca incluyen la prenda actual ── */
+document.getElementById('more-grid').innerHTML = Object.keys(CATALOGO)
+  .filter(function (k) { return k !== slug; })
+  .map(function (k) {
+    var o = CATALOGO[k];
+    return '<a class="mini" href="producto.html?p=' + k + '">' +
+             '<div class="mini-media">' +
+               '<img src="' + o.shots[0][1] + '" alt="' + o.name + '" loading="lazy">' +
+             '</div>' +
+             '<div class="mini-info">' +
+               '<span class="mini-sub">' + o.eyebrow + '</span>' +
+               '<span class="mini-name">' + o.name + '</span>' +
+               '<span class="mini-price">' + o.price + '</span>' +
+             '</div>' +
+           '</a>';
+  }).join('');
+
+/* ── Galería: revelado al entrar en viewport ── */
+const io_ = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io_.unobserve(e.target); } });
+}, { rootMargin: '0px 0px -12% 0px', threshold: 0.08 });
+document.querySelectorAll('.shot').forEach((el, i) => {
+  el.style.transitionDelay = Math.min(i * 40, 160) + 'ms';
+  io_.observe(el);
+});
+
+/* ── Tallas ── */
+const sizes = document.getElementById('sizes');
+const note  = document.getElementById('sz-note');
+
+sizes.addEventListener('click', e => {
+  const b = e.target.closest('.sz');
+  if (!b || b.disabled) return;
+  [...sizes.children].forEach(x => x.setAttribute('aria-pressed', 'false'));
+  b.setAttribute('aria-pressed', 'true');
+  picked = b.textContent.trim();
+  const q = +b.dataset.q;
+  note.textContent = q <= 2 ? `Quedan ${q}` : '';
+  add.disabled = false;  add.textContent  = 'Añadir al carrito';
+  addM.disabled = false; addM.textContent = 'Añadir';
+});
+
+/* ── Añadir al carrito ──
+   Esto faltaba por completo: el botón se habilitaba pero no hacía nada,
+   y como la tienda ahora entra siempre por esta página, no se podía comprar. */
+function anadir() {
+  if (!picked) return;
+  window.ClozkyCart.add({
+    productId: P.id,
+    name:      P.name,
+    price:     P.priceNum,
+    size:      picked,
+    qty:       1
+  });
+  confirmar();
+}
+
+function confirmar() {
+  [add, addM].forEach(function (b) {
+    if (!b) return;
+    const original = b === add ? 'Añadir al carrito' : 'Añadir';
+    b.textContent = 'Añadido ✓';
+    b.disabled = true;
+    setTimeout(function () { b.textContent = original; b.disabled = false; }, 1400);
+  });
+  const bar = document.getElementById('ir-bolsa');
+  if (bar) bar.hidden = false;
+}
+
+add.addEventListener('click', anadir);
+addM.addEventListener('click', anadir);
+
+/* ── Acordeones: height real, animable e interrumpible ── */
+document.querySelectorAll('.acc-btn').forEach(btn => {
+  const item  = btn.closest('.acc-item');
+  const panel = btn.nextElementSibling;
+  btn.addEventListener('click', () => {
+    const isOpen = item.classList.contains('open');
+    if (isOpen) {
+      panel.style.height = panel.scrollHeight + 'px';
+      requestAnimationFrame(() => { panel.style.height = '0px'; });
+      item.classList.remove('open');
+    } else {
+      panel.style.height = panel.scrollHeight + 'px';
+      item.classList.add('open');
+      panel.addEventListener('transitionend', function done(ev) {
+        if (ev.propertyName !== 'height') return;
+        panel.style.height = 'auto';
+        panel.removeEventListener('transitionend', done);
+      });
+    }
+  });
+});
+
+/* Abrir la guía de tallas desde el enlace de arriba */
+document.querySelectorAll('[data-open="guia"]').forEach(a => {
+  a.addEventListener('click', () => {
+    const item = document.getElementById('guia');
+    if (!item.classList.contains('open')) item.querySelector('.acc-btn').click();
+    item.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  });
+});
+</script>
+<script src="inventario.js"></script>
+<script src="cart.js" defer></script>
+<script src="shell.js" defer></script>
+</body>
+</html>

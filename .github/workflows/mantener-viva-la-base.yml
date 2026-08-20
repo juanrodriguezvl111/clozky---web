@@ -69,9 +69,13 @@ jobs:
           exit 1
 
       - name: Comprobar que la tienda carga
+        # Esto NO mantiene nada vivo: es una alarma barata de que el sitio está
+        # en pie. Solo corre si defines la variable SITE_URL del repositorio en
+        # Settings → Secrets and variables → Actions → Variables. Sin ella se
+        # salta, para que el keepalive de la base —que es lo importante— no
+        # falle por una URL desactualizada.
+        if: vars.SITE_URL != ''
         run: |
-          # No mantiene nada vivo: es una alarma barata de que el sitio está en pie.
-          CODE=$(curl -s -o /dev/null -m 20 -w '%{http_code}' \
-            https://tranquil-beignet-2ef138.netlify.app/)
-          echo "tienda -> HTTP $CODE"
+          CODE=$(curl -s -o /dev/null -m 20 -w '%{http_code}' "${{ vars.SITE_URL }}")
+          echo "tienda (${{ vars.SITE_URL }}) -> HTTP $CODE"
           [ "$CODE" = "200" ] || { echo "::error::La tienda devolvió $CODE"; exit 1; }

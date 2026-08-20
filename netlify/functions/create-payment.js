@@ -4,8 +4,15 @@ const WOMPI_PUBLIC_KEY = 'pub_prod_H2t4E7Bl53P5R2M9949Njdmtl6lIixkv';
 const WOMPI_SECRET     = process.env.WOMPI_INTEGRITY_SECRET;
 const SUPABASE_URL     = 'https://opcnglllvppfavjjpjkf.supabase.co';
 const SUPABASE_KEY     = process.env.SUPABASE_SERVICE_KEY;
-// Dominio propio: basta con definir SITE_URL en Netlify, no hay que tocar código.
-const SITE_URL         = process.env.SITE_URL || 'https://tranquil-beignet-2ef138.netlify.app';
+/* De dónde sale la URL del sitio, en orden:
+     1. SITE_URL   — defínela en Netlify cuando tengas dominio propio.
+     2. URL        — la inyecta Netlify sola, con la URL real del sitio.
+   El valor quemado quedó como último recurso, pero apunta a un subdominio que
+   ya no existe: si se llegara a usar, Wompi devolvería al cliente a un 404
+   después de pagar. Por eso `URL` va antes. */
+const SITE_URL         = process.env.SITE_URL
+                      || process.env.URL
+                      || 'https://tranquil-beignet-2ef138.netlify.app';
 
 // Catálogo oficial — nombre y precio salen de aquí, NUNCA del cliente
 const PRODUCTOS = {

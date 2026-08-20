@@ -72,7 +72,40 @@ end $$;
 
 
 -- ─────────────────────────────────────────────────────────────
--- 5. COMPROBACIÓN — qué debe salir
+-- 5. LA COLUMNA `estado` DEBE ACEPTAR CUATRO VALORES
+--
+--    El webhook escribe:
+--      pendiente  → recién creado, aún sin pagar
+--      procesando → cobrado, descontando stock ahora mismo
+--      pagado     → cobrado y stock descontado, listo para despachar
+--      revisar    → cobrado pero algo no cuadró (monto o stock). Mirar a mano.
+--
+--    Si `estado` es un enum o tiene un CHECK que no incluya 'procesando' y
+--    'revisar', esas escrituras devuelven 400, el webhook responde 500 y
+--    Wompi reintenta en bucle. Esta consulta dice qué hay hoy:
+-- ─────────────────────────────────────────────────────────────
+select column_name, data_type, udt_name
+from information_schema.columns
+where table_schema = 'public' and table_name = 'pedidos' and column_name = 'estado';
+
+select conname, pg_get_constraintdef(oid) as definicion
+from pg_constraint
+where conrelid = 'public.pedidos'::regclass and contype = 'c';
+
+--  Si es un enum llamado, por ejemplo, `estado_pedido`, añade los que falten:
+--     alter type public.estado_pedido add value if not exists 'procesando';
+--     alter type public.estado_pedido add value if not exists 'revisar';
+--
+--  Si es `text` con un CHECK que los excluye, reemplázalo:
+--     alter table public.pedidos drop constraint <nombre_del_check>;
+--     alter table public.pedidos add constraint pedidos_estado_valido
+--       check (estado in ('pendiente','procesando','pagado','revisar'));
+--
+--  Si es `text` sin CHECK, no hay nada que hacer: ya funciona.
+
+
+-- ─────────────────────────────────────────────────────────────
+-- 6. COMPROBACIÓN — qué debe salir
 --
 --    Ejecuta esto después de lo anterior. Las dos tablas deben
 --    aparecer con rls_activo = true.

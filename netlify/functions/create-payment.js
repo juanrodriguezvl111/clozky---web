@@ -34,18 +34,49 @@ const resp = (statusCode, body, json) => ({
    Por contenedor y en memoria: Netlify puede tener varios vivos a la vez, así
    que esto frena scripts torpes, no un ataque distribuido. La contención real
    está en validar todo lo que entra y en no dejar campos libres en la base. */
-const GOLPES     = new Map();
-const VENTANA_MS = 60000;
-const MAX_VENTANA = 8;
+const GOLPES      = new Map();
+const VENTANA_MS  = 60000;
+const MAX_VENTANA = 25;   // los operadores móviles colombianos usan CGNAT:
+                          // varios clientes reales comparten IP de salida.
 
-function pasaLimite(ip) {
+function pasaLimite(clave) {
     const ahora = Date.now();
-    const previos = (GOLPES.get(ip) || []).filter(t => ahora - t < VENTANA_MS);
+    const previos = (GOLPES.get(clave) || []).filter(t => ahora - t < VENTANA_MS);
+    if (previos.length >= MAX_VENTANA) {
+        GOLPES.set(clave, previos);   // no se apunta el golpe bloqueado:
+        return false;                 // si no, el bloqueo se auto-alimenta.
+    }
     previos.push(ahora);
-    GOLPES.set(ip, previos);
-    if (GOLPES.size > 5000) GOLPES.clear();   // techo de memoria
-    return previos.length <= MAX_VENTANA;
+    GOLPES.set(clave, previos);
+    if (GOLPES.size > 5000) {
+        // Purga selectiva: se van las ventanas ya vencidas, no todo el mapa.
+        for (const [k, v] of GOLPES) {
+            if (!v.some(t => ahora - t < VENTANA_MS)) GOLPES.delete(k);
+        }
+    }
+    return true;
 }
+
+/* Lectura contra Supabase con la service key. Lanza si la respuesta no es OK:
+   `fetch` no lanza solo en 4xx/5xx y un fallo silencioso aquí daría "hay stock". */
+async function sbGet(path) {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+        headers: {
+            'apikey':        SUPABASE_KEY,
+            'Authorization': `Bearer ${SUPABASE_KEY}`,
+        },
+    });
+    if (!res.ok) throw new Error(`Supabase GET ${path} → ${res.status}`);
+    return res.json();
+}
+
+/* Normaliza un nombre de producto para compararlo: mayúsculas/minúsculas,
+   apóstrofos tipográficos y espacios de más dejan de importar. */
+const clave = (v) => String(v ?? '')
+    .replace(/[‘’ʼ]/g, "'")
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toLowerCase();
 
 /* Recorta a longitud fija y quita caracteres de control. */
 const txt = (v, max) => String(v ?? '').replace(/[\x00-\x1F\x7F]/g, '').trim().slice(0, max);
@@ -62,10 +93,6 @@ exports.handler = async (event) => {
     const ip = event.headers['x-nf-client-connection-ip']
             || (event.headers['x-forwarded-for'] || '').split(',')[0].trim()
             || 'desconocida';
-    if (!pasaLimite(ip)) {
-        console.warn(`Límite de tasa alcanzado por ${ip}`);
-        return resp(429, 'Demasiadas solicitudes. Espera un momento.');
-    }
 
     let body;
     try { body = JSON.parse(event.body || ''); }
@@ -95,6 +122,13 @@ exports.handler = async (event) => {
         return resp(400, 'Datos de envío incompletos');
     }
 
+    // Se cuenta por IP + correo: una IP compartida por CGNAT no puede dejar
+    // fuera a otro cliente distinto que compra desde la misma red.
+    if (!pasaLimite(ip + '|' + clienteLimpio.email)) {
+        console.warn(`Límite de tasa alcanzado por ${ip}`);
+        return resp(429, 'Demasiadas solicitudes. Espera un momento.');
+    }
+
     /* ── Artículos: precio, nombre y talla los pone el servidor ── */
     let subtotal = 0;
     const itemsValidados = [];
@@ -102,10 +136,13 @@ exports.handler = async (event) => {
         if (!item || typeof item !== 'object') return resp(400, 'Artículo inválido');
 
         // Carritos viejos guardaban productId nulo: se resuelve por nombre.
+        // Hay que normalizar: la portada guarda el nombre en MAYÚSCULAS y
+        // producto.html usa apóstrofo tipográfico (’) donde el catálogo usa '.
         let pid = Number(item.productId);
         if (!Number.isInteger(pid) || !PRODUCTOS[pid]) {
+            const buscado = clave(item.name);
             const porNombre = Object.keys(PRODUCTOS)
-                .find(k => PRODUCTOS[k].nombre === String(item.name ?? ''));
+                .find(k => clave(PRODUCTOS[k].nombre) === buscado);
             pid = porNombre ? Number(porNombre) : NaN;
         }
         const producto = PRODUCTOS[pid];
@@ -126,12 +163,42 @@ exports.handler = async (event) => {
         });
     }
 
+    /* ── Stock real antes de cobrar ──
+       inventario.js comprueba el stock en el navegador, pero eso es una pista
+       de interfaz: una pestaña vieja o una compra simultánea la dejan obsoleta.
+       Sin esto, el servidor firma y cobra una talla agotada, y el problema
+       aparece en el webhook — con el dinero ya movido. */
+    try {
+        const pedido = new Map();   // "id|talla" → unidades pedidas
+        for (const it of itemsValidados) {
+            const k = `${it.productId}|${it.size}`;
+            pedido.set(k, (pedido.get(k) || 0) + it.qty);
+        }
+        const ids  = [...new Set(itemsValidados.map(i => i.productId))].join(',');
+        const filas = await sbGet(`inventario?select=producto_id,talla,stock&producto_id=in.(${ids})`);
+        const hay = new Map((filas || []).map(f => [`${f.producto_id}|${f.talla}`, Number(f.stock) || 0]));
+
+        for (const [k, piden] of pedido) {
+            if ((hay.get(k) ?? 0) < piden) {
+                const [, talla] = k.split('|');
+                console.warn(`Sin stock para ${k}: piden ${piden}, hay ${hay.get(k) ?? 0}`);
+                return resp(409, `Nos quedamos sin la talla ${talla}. Actualiza tu bolsa.`);
+            }
+        }
+    } catch (e) {
+        // Si el inventario no responde no se bloquea la venta: el guardado del
+        // pedido, más abajo, sí falla en cerrado si Supabase está caído.
+        console.error('No se pudo verificar stock, se continúa:', e.message);
+    }
+
     const envio = subtotal >= ENVIO_GRATIS ? 0 : ENVIO_COSTO;
     const total = subtotal + envio;
     const cents = total * 100;
 
-    // Referencia impredecible: no debe poderse adivinar la de otro pedido
-    const ref = 'CLZKY-' + crypto.randomBytes(9).toString('base64url').toUpperCase();
+    // Referencia impredecible: no debe poderse adivinar la de otro pedido.
+    // Hexadecimal a propósito: base64url mete "_" y "-", y no está comprobado
+    // que Wompi acepte "_". 9 bytes = 72 bits, de sobra.
+    const ref = 'CLZKY-' + crypto.randomBytes(9).toString('hex').toUpperCase();
 
     // Firma de integridad — se computa en el servidor, nunca llega al cliente
     const integridad = crypto

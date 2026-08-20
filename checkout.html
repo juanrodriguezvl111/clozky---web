@@ -364,6 +364,9 @@
 
 </main>
 
+<!-- cart.js va ANTES del script en línea: init() lo necesita ya cargado.
+     Con defer corría después y la bolsa salía siempre vacía. -->
+<script src="cart.js"></script>
 <script>
     const ENVIO_COSTO  = 12000;
     const ENVIO_GRATIS = 200000;
@@ -381,11 +384,10 @@
     let envio = 0;
     let total = 0;
 
-    // Leer carrito desde localStorage
+    // El carrito se lee por ClozkyCart, que filtra entradas corruptas.
+    // Leer localStorage a mano se saltaba ese filtro (regla en CLAUDE.md).
     function init() {
-        try {
-            cart = JSON.parse(localStorage.getItem('clzky_cart') || '[]');
-        } catch(e) { cart = []; }
+        cart = (window.ClozkyCart ? ClozkyCart.read() : []);
 
         if (!cart.length) {
             document.getElementById('form-area').style.display = 'none';
@@ -397,21 +399,26 @@
         calcTotals();
     }
 
+    // El carrito vive en localStorage del propio navegador. Escapar no protege
+    // de terceros, pero evita que un carrito corrupto rompa la página entera.
+    const esc = (v) => String(v ?? '').replace(/[&<>"']/g,
+        c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+
     function renderItems() {
         subtotal = cart.reduce((a, i) => a + i.price * i.qty, 0);
 
         document.getElementById('ck-items').innerHTML = cart.map(item => {
             const img = item.productId && PRODUCT_IMGS[item.productId]
-                ? `<img src="${PRODUCT_IMGS[item.productId]}" alt="${item.name}"
+                ? `<img src="${PRODUCT_IMGS[item.productId]}" alt="${esc(item.name)}"
                          onerror="this.style.display='none'">`
                 : `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2a2a2a" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="1"/></svg>`;
             return `
             <div class="ck-item">
                 <div class="ck-item-img">${img}</div>
                 <div>
-                    <p class="ck-item-name">${item.name}</p>
-                    <p class="ck-item-detail">Talla: ${item.size}</p>
-                    <span class="ck-item-qty">Cant: ${item.qty}</span>
+                    <p class="ck-item-name">${esc(item.name)}</p>
+                    <p class="ck-item-detail">Talla: ${esc(item.size)}</p>
+                    <span class="ck-item-qty">Cant: ${esc(item.qty)}</span>
                 </div>
                 <span class="ck-item-price">${fmt(item.price * item.qty)}</span>
             </div>`;
@@ -481,10 +488,15 @@
             });
 
             if (!res.ok) {
-                // El servidor explica qué pasó (carrito inválido, base caída…).
-                // Mostrarlo es mejor que un "intenta de nuevo" a ciegas.
-                const motivo = (await res.text().catch(() => '')).trim();
-                throw new Error(motivo || `Error del servidor: ${res.status}`);
+                // El servidor explica qué pasó (talla agotada, carrito inválido…)
+                // en texto plano y corto. Un 500/502 de la plataforma devuelve
+                // una página HTML entera: eso no se le enseña al cliente.
+                let motivo = '';
+                if (res.status < 500 || res.status === 503) {
+                    motivo = (await res.text().catch(() => '')).trim();
+                    if (motivo.length > 160 || /[<>]/.test(motivo)) motivo = '';
+                }
+                throw new Error(motivo || 'No pudimos procesar el pago. Intenta de nuevo.');
             }
             const { wompiUrl, reference, total: totalReal } = await res.json();
 
@@ -505,6 +517,6 @@
 
     init();
 </script>
-<script src="cart.js" defer></script>
+
 </body>
 </html>

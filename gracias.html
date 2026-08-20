@@ -78,16 +78,34 @@
 <script>
     const fmt = n => '$' + Number(n).toLocaleString('es-CO');
 
-    const params  = new URLSearchParams(window.location.search);
-    const status  = params.get('payment-status') || params.get('status');
-    const txId    = params.get('id');
+    const params = new URLSearchParams(window.location.search);
+    /* Wompi redirige con ?id=<transaccion> y NADA MÁS: nunca manda
+       `payment-status` ni `status`. Leerlos daba siempre null, y entonces
+       cualquier pago —incluido uno rechazado— se pintaba como exitoso y
+       vaciaba el carrito, mientras el Purchase del Pixel no se disparaba
+       jamás. El estado hay que preguntárselo a Wompi. */
+    const txId = params.get('id');
 
     let order = null;
     try { order = JSON.parse(localStorage.getItem('clzky_order') || 'null'); } catch(e) {}
 
     const card = document.getElementById('main-card');
 
-    if (status === 'APPROVED' || (!status && order)) {
+    async function estadoReal() {
+        if (!txId) return null;
+        try {
+            const r = await fetch('https://production.wompi.co/v1/transactions/' + encodeURIComponent(txId));
+            if (!r.ok) throw new Error(r.status);
+            const j = await r.json();
+            return j?.data?.status || null;
+        } catch (e) {
+            console.warn('No se pudo confirmar el pago con Wompi', e);
+            return 'DESCONOCIDO';
+        }
+    }
+
+    function pintar(status) {
+    if (status === 'APPROVED') {
         // ── ÉXITO ──
         const itemsHtml = order ? order.items.map(i => `
             <div class="order-item">
@@ -126,8 +144,9 @@
                 <a href="https://www.instagram.com/clozkystudios" target="_blank" class="btn-ghost">Seguirnos en Instagram</a>
             </div>`;
 
-        // Meta Pixel: compra (solo con pago APROBADO, evita Purchase falsos)
-        if (window.fbq && order && status === 'APPROVED') {
+        // Meta Pixel: compra. Aquí el estado ya viene confirmado por la API de
+        // Wompi, no del query string: no hay Purchase falsos.
+        if (window.fbq && order) {
             const CATALOG = { 1: 'CLZ001', 2: 'CLZ002', 3: 'CLZ003' };
             fbq('track', 'Purchase', {
                 content_ids: order.items.map(i => CATALOG[i.productId]).filter(Boolean),
@@ -179,8 +198,19 @@
                 </div>
             </div>`;
 
+    } else if (status === 'DESCONOCIDO') {
+        // No pudimos preguntarle a Wompi. No afirmamos nada ni tocamos el
+        // carrito: mentir en cualquiera de los dos sentidos es peor.
+        card.innerHTML = `
+            <h1 class="title">Pago recibido</h1>
+            <p class="subtitle">Estamos confirmando tu pago con Wompi. Te llega el correo
+               en cuanto quede aprobado. Si tienes dudas, escríbenos por Instagram.</p>
+            <div class="actions">
+                <a href="index.html" class="btn-primary">Ir a la tienda</a>
+            </div>`;
+
     } else {
-        // Sin status — acceso directo
+        // Sin id en la URL — acceso directo
         card.innerHTML = `
             <h1 class="title">Hola</h1>
             <p class="subtitle">Esta página confirma tus pedidos luego de un pago exitoso con Wompi.</p>
@@ -188,6 +218,9 @@
                 <a href="index.html" class="btn-primary">Ir a la tienda</a>
             </div>`;
     }
+    }
+
+    estadoReal().then(pintar);
 </script>
 </body>
 </html>

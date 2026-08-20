@@ -39,14 +39,6 @@ Envío: 12.000 — gratis desde 200.000.
 - Usar Pixel web ADSM real, NUNCA el App ID.
 - Copy de marca: luxury no grita specs — nunca mencionar gramaje/serigrafía/calidad.
 
-## Aprendizajes
-
-- Umbral de envío gratis (200k) < producto más barato (220k) → el envío nunca
-  se cobra. Verificar si es intencional antes de tocar precios.
-- Imágenes ya comprimidas 94% (222MB → 12MB); no re-subir originales pesados.
-- CORS y `SITE_URL` hardcodeados al subdominio de Netlify en `create-payment.js` —
-  al migrar a dominio propio hay que actualizarlos.
-
 ## Rediseño "Effortless" (rama `rediseno-effortless`, sin desplegar)
 
 Estado al 19 de agosto de 2026. **Nada de esto está en producción todavía.**
@@ -69,8 +61,9 @@ Estado al 19 de agosto de 2026. **Nada de esto está en producción todavía.**
 - Umbral de envío gratis (200k) < producto más barato (220k) → el envío nunca
   se cobra. Verificar si es intencional antes de tocar precios.
 - Imágenes ya comprimidas 94% (222MB → 12MB); no re-subir originales pesados.
-- CORS y `SITE_URL` hardcodeados al subdominio de Netlify en `create-payment.js` —
-  al migrar a dominio propio hay que actualizarlos.
+- `SITE_URL` sale de variable de entorno en `create-payment.js` (con el
+  subdominio de Netlify como respaldo). Migrar a dominio propio = definir
+  `SITE_URL` en Netlify, sin tocar código. Rige también el CORS.
 - El carrito es **`cart.js`**, no `localStorage` directo. Antes cada página
   escribía por su cuenta y ninguna leía de vuelta: el contador marcaba 0
   mientras el checkout tenía prendas. No volver a tocar `localStorage` a mano.
@@ -83,15 +76,41 @@ Estado al 19 de agosto de 2026. **Nada de esto está en producción todavía.**
   capas abiertas.
 - Magnific: `ultra-photo` es el único modo con creatividad cero (solo calidad).
   `creative` alucina detalle y no sirve para foto de producto real.
+- **`fetch` no lanza excepción en 4xx/5xx.** Un `try/catch` alrededor de una
+  escritura a Supabase no detecta un 403 de RLS: pasa como si hubiera ido bien.
+  Hay que comprobar `res.ok` a mano. Este era el bug que dejaba cobrar sin pedido.
+- El descuento de stock se hace por comparación-e-intercambio: se relee y el
+  PATCH lleva `stock=eq.<valor leído>`. Si otro proceso ganó, PostgREST devuelve
+  0 filas y se reintenta. Leer-restar-escribir sobrevende.
+- Wompi reintenta los webhooks. El pedido se toma en exclusiva con un PATCH
+  filtrado por `estado=eq.pendiente` y `return=representation`: el segundo
+  webhook no encuentra filas y sale sin tocar el stock.
+- Las fotos de la sala son verticales y el marco usa `object-fit: cover`.
+  Un formato horizontal (`cuadro`, `paisaje`) les corta cabeza o pies:
+  solo `alto` (4:5), `retrato` (3:4) y `panel` (2:3).
+- Los PNG de origen (>100 MB) viven en `_fuentes/`, ignorada por git y fuera
+  del deploy. `assets/` solo lleva lo que alguna página referencia de verdad.
+- El navegador headless de gstack (`browse.exe`) está bloqueado por App Control
+  de Windows en esta máquina. Para capturas: Edge headless
+  (`msedge.exe --headless=new --screenshot=...`). Con ventanas muy altas
+  (3600px) el IntersectionObserver no alcanza a marcar las piezas y la captura
+  sale en blanco: usar alturas normales (~1000px).
 
 ## Pendientes
 
-- **RLS de Supabase — lo más urgente.** `pedidos` guarda correo, nombre,
-  teléfono, cédula y dirección. La anon key es pública; solo RLS protege eso.
-  Sin verificar (informe: `~/Desktop/cyber-neo-report-clozky-2026-08-19.md`).
-- Corregir los 4 hallazgos altos del informe de seguridad (CN-001 a CN-004).
+- **RLS de Supabase — lo único que falta para cerrar el informe.** Ejecutar
+  `supabase-seguridad.sql` en el SQL Editor. `pedidos` guarda correo, nombre,
+  teléfono, cédula y dirección; la anon key es pública y solo RLS protege eso.
+  Sin verificar: este entorno no resuelve el DNS de Supabase.
+- Confirmar en Netlify que existen `WOMPI_INTEGRITY_SECRET`,
+  `WOMPI_EVENTOS_SECRET` y `SUPABASE_SERVICE_KEY`.
+- Comprobar que la columna `estado` de `pedidos` acepta el valor `'revisar'`
+  (lo escribe el webhook cuando el stock no cuadra). Si hay CHECK o enum que
+  no lo incluya, el webhook devolverá 500 y Wompi reintentará en bucle.
+- Envío gratis desde 200.000 con el producto más barato en 220.000: el envío
+  **nunca** se cobra. Decidir si es intencional.
 - Video del hero: `assets/hero.mp4`. El `<source>` está comentado en
   `index.html`; al añadir el archivo, descomentar.
-- 101 MB de PNG sin referenciar en `assets/` que Netlify publica igual.
 - Dominio propio (mejora confianza + verificación en Business Manager).
-- Limpiar `screenshot-*.png` sin trackear (~5MB) y `.claude/worktrees/` residual.
+  Al hacerlo, definir `SITE_URL` en Netlify.
+- Desplegar: la rama `rediseno-effortless` sigue sin subir a producción.

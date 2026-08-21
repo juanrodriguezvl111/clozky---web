@@ -123,6 +123,11 @@ Estado al 19 de agosto de 2026. **Nada de esto está en producción todavía.**
   ellos miran la base, no el sitio. Detalle del formulario de UptimeRobot:
   rechaza la URL sin barra final — hay que escribir `.../` o da
   "URL (IP) is invalid".
+  Segundo monitor sobre `/.netlify/functions/salud`: ese endpoint devuelve 200
+  sólo si Supabase responde y 503 si no. Hace falta porque la portada sigue
+  dando 200 con la base muerta — el sitio se ve, pero el checkout devuelve 503
+  y no se vende. Cachea 60s para que nadie martillee la base desde ahí, y al
+  consultarse cada 5 minutos es además el keepalive más frecuente de los tres.
 - Netlify Free (2026) son 300 créditos/mes: ~15 GB de tráfico y ~20 despliegues
   de producción, con tope duro. Al agotarse **se apagan las funciones**, o sea
   el checkout. Vercel Hobby da más, pero prohíbe el uso comercial: una tienda

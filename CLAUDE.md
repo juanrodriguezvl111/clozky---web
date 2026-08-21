@@ -117,6 +117,12 @@ Estado al 19 de agosto de 2026. **Nada de esto está en producción todavía.**
     también vigila a diario que esa variable siga siendo válida.
   Las funciones programadas de Netlify solo corren en despliegues de
   producción publicados, no en previews ni en ramas.
+- **Vigilancia, tercera capa:** UptimeRobot (plan gratis, cuenta del dueño)
+  comprueba `https://clozkygallery.netlify.app/` cada 5 minutos y avisa por
+  correo si la tienda se cae. Eso es lo que los dos keepalives NO cubren:
+  ellos miran la base, no el sitio. Detalle del formulario de UptimeRobot:
+  rechaza la URL sin barra final — hay que escribir `.../` o da
+  "URL (IP) is invalid".
 - Netlify Free (2026) son 300 créditos/mes: ~15 GB de tráfico y ~20 despliegues
   de producción, con tope duro. Al agotarse **se apagan las funciones**, o sea
   el checkout. Vercel Hobby da más, pero prohíbe el uso comercial: una tienda

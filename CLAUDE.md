@@ -107,9 +107,16 @@ Estado al 19 de agosto de 2026. **Nada de esto está en producción todavía.**
   tercero se copia de su documentación, o se captura de un evento real.
 - **Supabase Free pausa el proyecto tras 7 días sin actividad**, y con la base
   pausada el checkout devuelve 503: no se vende, sin aviso. Pasó el 20 de
-  agosto de 2026. Mitigación sin pagar: `.github/workflows/mantener-viva-la-base.yml`
-  consulta la base a diario. GitHub desactiva los cron si el repo pasa 60 días
-  sin commits — avisa por correo, y se reactiva desde la pestaña Actions.
+  agosto de 2026. Hay **dos keepalives independientes**, a propósito:
+  · `.github/workflows/mantener-viva-la-base.yml` — 12:00 UTC. Punto débil:
+    GitHub desactiva los cron si el repo pasa 60 días sin commits (avisa por
+    correo; se reactiva desde la pestaña Actions).
+  · `netlify/functions/mantener-viva.js` — 00:00 UTC, programada desde
+    `netlify.toml` con `[functions."mantener-viva"] schedule`. No depende de
+    GitHub, así que cubre ese punto débil. Usa la service key, con lo cual
+    también vigila a diario que esa variable siga siendo válida.
+  Las funciones programadas de Netlify solo corren en despliegues de
+  producción publicados, no en previews ni en ramas.
 - Netlify Free (2026) son 300 créditos/mes: ~15 GB de tráfico y ~20 despliegues
   de producción, con tope duro. Al agotarse **se apagan las funciones**, o sea
   el checkout. Vercel Hobby da más, pero prohíbe el uso comercial: una tienda

@@ -2,6 +2,15 @@
   functions = "netlify/functions"
   publish   = "."
 
+# ── Segundo keepalive de la base ──
+# Supabase Free se pausa a los 7 días sin actividad y eso tumba el checkout.
+# Ya hay un ping diario en GitHub Actions, pero GitHub desactiva los cron si el
+# repositorio pasa 60 días sin commits. Éste corre en Netlify, no depende de
+# GitHub, y va desfasado 12 horas del otro (aquel a las 12:00 UTC).
+# Sólo se ejecuta en despliegues de producción publicados.
+[functions."mantener-viva"]
+  schedule = "0 0 * * *"
+
 # ── Cabeceras de seguridad ──
 # La CSP admite 'unsafe-inline' porque el sitio lleva <style> y <script> en línea
 # y el Píxel de Meta inyecta los suyos. Eso limita su valor contra XSS: lo que sí

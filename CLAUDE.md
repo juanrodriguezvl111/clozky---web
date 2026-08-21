@@ -30,7 +30,7 @@ como asistente de creación de webs.
 | 2 | No Grace | 220.000 |
 | 3 | Devil's F*cking Evil | 240.000 |
 
-Envío: 12.000 — gratis desde 200.000.
+Envío: 20.000, se cobra siempre (no hay envío gratis).
 
 ## Reglas de trabajo
 
@@ -58,8 +58,11 @@ Estado al 19 de agosto de 2026. **Nada de esto está en producción todavía.**
 
 ## Aprendizajes
 
-- Umbral de envío gratis (200k) < producto más barato (220k) → el envío nunca
-  se cobra. Verificar si es intencional antes de tocar precios.
+- El envío cuesta 20.000 y se cobra SIEMPRE (decidido el 20 de agosto de 2026).
+  Antes era 12.000 con envío gratis desde 200.000, pero la prenda más barata
+  cuesta 220.000: el umbral quedaba por debajo del carrito mínimo y el envío
+  no se cobraba nunca. Vive en tres sitios: `create-payment.js` (manda),
+  `checkout.html` (solo muestra) y el texto de `cambios.html`.
 - Imágenes ya comprimidas 94% (222MB → 12MB); no re-subir originales pesados.
 - `SITE_URL` sale de variable de entorno en `create-payment.js` (con el
   subdominio de Netlify como respaldo). Migrar a dominio propio = definir
@@ -161,8 +164,6 @@ Estado al 19 de agosto de 2026. **Nada de esto está en producción todavía.**
   bugs de Wompi eran invisibles desde el código: solo un pago de verdad
   confirma que el pedido pasa a `pagado`, el stock baja y el Pixel registra
   Purchase.
-- Envío gratis desde 200.000 con el producto más barato en 220.000: el envío
-  **nunca** se cobra. Decidir si es intencional.
 - Video del hero: `assets/hero.mp4`. El `<source>` está comentado en
   `index.html`; al añadir el archivo, descomentar.
 - Dominio propio (mejora confianza + verificación en Business Manager).

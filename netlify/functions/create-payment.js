@@ -22,8 +22,10 @@ const PRODUCTOS = {
 };
 const TALLAS       = ['S', 'M', 'L', 'XL'];
 const MAX_LINEAS   = 20;
-const ENVIO_COSTO  = 12000;
-const ENVIO_GRATIS = 200000;
+// El envío se cobra SIEMPRE. Antes había envío gratis desde $200.000, pero la
+// prenda más barata cuesta $220.000: el umbral quedaba por debajo del carrito
+// mínimo y el envío no se cobraba nunca en ninguna compra.
+const ENVIO_COSTO  = 20000;
 
 const CORS = {
     'Access-Control-Allow-Origin':  SITE_URL,
@@ -198,7 +200,7 @@ exports.handler = async (event) => {
         console.error('No se pudo verificar stock, se continúa:', e.message);
     }
 
-    const envio = subtotal >= ENVIO_GRATIS ? 0 : ENVIO_COSTO;
+    const envio = ENVIO_COSTO;
     const total = subtotal + envio;
     const cents = total * 100;
 

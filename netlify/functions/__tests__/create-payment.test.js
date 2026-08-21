@@ -59,7 +59,7 @@ async function t(nombre, fn) {
 
     await t('el precio que manda el cliente se ignora', async () => {
         const r = await call([{ productId: 2, name: 'No Grace', size: 'M', qty: 1, price: 1 }]);
-        return JSON.parse(r.body).total === 220000;   // envío gratis desde 200k
+        return JSON.parse(r.body).total === 240000;   // 220.000 + 20.000 de envío
     });
 
     await t('el nombre que manda el cliente se ignora (usa catálogo)', async () => {
@@ -141,12 +141,12 @@ async function t(nombre, fn) {
 
     await t('M1: carrito viejo sin productId y nombre en MAYÚSCULAS se resuelve', async () => {
         const r = await call([{ productId: null, name: 'NO GRACE', size: 'M', qty: 1 }]);
-        return JSON.parse(r.body).total === 220000;
+        return JSON.parse(r.body).total === 240000;
     });
 
     await t('M1: nombre con apóstrofo tipográfico se resuelve', async () => {
         const r = await call([{ productId: null, name: 'Devil’s F*cking Evil', size: 'M', qty: 1 }]);
-        return JSON.parse(r.body).total === 240000;
+        return JSON.parse(r.body).total === 260000;
     });
 
     await t('qty topado a 10', async () => {
@@ -169,6 +169,19 @@ async function t(nombre, fn) {
         const otro = { ...cliOK, email: 'otra@persona.com' };
         const r = await call([{ productId: 2, size: 'M', qty: 1 }], otro, '9.9.9.9');
         return r.statusCode === 200;
+    });
+
+    await t('el envío de 20.000 se cobra siempre, compre lo que compre', async () => {
+        const uno = JSON.parse((await call([{ productId: 2, size: 'M', qty: 1 }])).body);
+        const dos = JSON.parse((await call([{ productId: 2, size: 'M', qty: 2 }])).body);
+        const tres = JSON.parse((await call([
+            { productId: 1, size: 'M', qty: 1 },
+            { productId: 2, size: 'M', qty: 1 },
+            { productId: 3, size: 'M', qty: 1 },
+        ])).body);
+        return uno.total  === 220000 + 20000
+            && dos.total  === 440000 + 20000
+            && tres.total === 720000 + 20000;
     });
 
     await t('OPTIONS responde al preflight', async () =>

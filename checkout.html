@@ -368,8 +368,8 @@
      Con defer corría después y la bolsa salía siempre vacía. -->
 <script src="cart.js"></script>
 <script>
-    const ENVIO_COSTO  = 12000;
-    const ENVIO_GRATIS = 200000;
+    // Solo para mostrar. El servidor recalcula el total y es el que manda.
+    const ENVIO_COSTO = 20000;
 
     const PRODUCT_IMGS = {
         1: 'assets/product1-cut.webp',
@@ -427,14 +427,13 @@
 
     function calcTotals() {
         subtotal = cart.reduce((a, i) => a + i.price * i.qty, 0);
-        envio = subtotal >= ENVIO_GRATIS ? 0 : ENVIO_COSTO;
+        envio = ENVIO_COSTO;
         total = subtotal + envio;
 
         document.getElementById('ck-subtotal').textContent = fmt(subtotal);
-        document.getElementById('ck-envio').textContent = envio === 0 ? 'GRATIS' : fmt(envio);
+        document.getElementById('ck-envio').textContent = fmt(envio);
         document.getElementById('ck-total').textContent = fmt(total);
-        document.getElementById('envio-info').textContent =
-            subtotal < ENVIO_GRATIS ? `(gratis desde ${fmt(ENVIO_GRATIS)})` : '';
+        document.getElementById('envio-info').textContent = '';
     }
 
     function aplicarDescuento() {

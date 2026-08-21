@@ -125,8 +125,23 @@ Estado al 19 de agosto de 2026. **Nada de esto está en producción todavía.**
     llamaba en la 391 → `typeof sincronizarInventario === 'function'` daba
     false, la guarda lo saltaba sin avisar y la página vendía tallas agotadas
     con la tabla quemada del archivo.
-  Una guarda `typeof x === 'function'` convierte un error de orden en un bug
-  invisible. Si el script es obligatorio, cárgalo antes y no lo protejas.
+  · `cart.js` con `defer` en `index.html` mientras la línea 1333 hacía
+    `let cart = ClozkyCart.read()` → el carrito local arrancaba vacío, pero el
+    `paint()` de cart.js sí pintaba el contador leyendo localStorage: el badge
+    decía 1 y la bolsa se abría vacía.
+  Una guarda `typeof x === 'function'` o un `window.X ? ... : []` convierten un
+  error de orden en un bug invisible. Si el script es obligatorio, cárgalo antes.
+- **Cuidado con `aspect-ratio` en capas que cambian de `position` en móvil.**
+  `.product-hover-layer` lleva `aspect-ratio:4/5` porque en escritorio va
+  superpuesta sobre la foto. En móvil pasa a `position:static` y ese ratio la
+  inflaba a ~490px de alto para un botón de 50px: 250px de hueco negro por
+  prenda. La regla vivía más abajo en la hoja que el bloque `@media`, así que
+  ganaba por orden — hubo que acotarla con `@media (min-width:901px)`, no
+  sobrescribirla desde el bloque móvil.
+- El hero usa una foto cuadrada con `object-fit:cover`. En pantallas verticales
+  el recorte es HORIZONTAL, no vertical: ahí manda la X de `object-position`,
+  no la Y. Con `center` la cabeza del modelo quedaba pegada al borde; al 30%
+  entra con aire. En escritorio no hay recorte horizontal y no le afecta.
 - Las pruebas viven en `netlify/functions/__tests__/`, sin dependencias:
   `sh netlify/functions/__tests__/correr.sh`.
 - El navegador headless de gstack (`browse.exe`) está bloqueado por App Control

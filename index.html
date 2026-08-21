@@ -7,7 +7,7 @@
     <link rel="icon" type="image/png" href="assets/mascot.png">
 
     <!-- Meta Pixel Code -->
-    <script>
+<script>
     !function(f,b,e,v,n,t,s)
     {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
     n.callMethod.apply(n,arguments):n.queue.push(arguments)};
@@ -610,11 +610,11 @@
             .btn-primary, .btn-ghost { width: 100%; max-width: 300px; text-align: center; padding: 16px 24px; }
 
             /* Collection header */
-            .collection-header { padding: 72px 20px 48px; }
+            .collection-header { padding: 48px 20px 30px; }
             .collection-desc { font-size: 13px; margin-top: 28px; }
 
             /* Products */
-            #shop { padding: 0 0 80px; }
+            #shop { padding: 0 0 52px; }
             .products-grid { grid-template-columns: 1fr 1fr; gap: 2px; }
             .products-grid .product-card:last-child { grid-column: span 2; }
             .product-card { display: flex; flex-direction: column; }
@@ -627,6 +627,11 @@
                 background: none;
                 padding: 0 14px 16px;
                 display: block;
+                /* En escritorio esta capa va superpuesta sobre la foto y el
+                   aspect-ratio 4/5 tiene sentido. Aquí es un bloque normal:
+                   ese ratio le daba ~487px de alto para un botón de 50px,
+                   y eso era el hueco negro entre prenda y prenda. */
+                aspect-ratio: auto;
             }
             .product-name { font-size: 11px; }
             .product-price { font-size: 18px; }
@@ -635,15 +640,15 @@
             /* Brand */
             #brand { grid-template-columns: 1fr; }
             .brand-visual { min-height: 56vw; }
-            .brand-content { padding: 48px 20px; }
+            .brand-content { padding: 36px 20px; }
             .brand-title { font-size: clamp(36px, 9vw, 72px); margin-bottom: 24px; }
             .brand-text { font-size: 13px; margin-bottom: 32px; }
 
             /* Instagram */
-            #instagram { padding: 80px 20px; }
+            #instagram { padding: 52px 20px; }
 
             /* Footer */
-            footer { grid-template-columns: 1fr; padding: 48px 20px 32px; gap: 32px; }
+            footer { grid-template-columns: 1fr; padding: 36px 20px 24px; gap: 22px; }
             .footer-bottom { flex-direction: column; gap: 8px; text-align: center; padding: 18px 20px; }
 
             /* Cart */
@@ -736,7 +741,7 @@
            ========================================================= */
         #lookbook{
             display:grid; place-items:center;
-            padding:clamp(80px,13vw,170px) clamp(16px,4vw,48px);
+            padding:clamp(48px,13vw,170px) clamp(16px,4vw,48px);
         }
         .ticket{
             position:relative; display:grid;
@@ -872,9 +877,12 @@
            AJUSTES: encuadre del hero + ficha de producto legible
            ========================================================= */
 
-        /* El sujeto queda arriba en la foto: subimos el punto focal
-           para que la cabeza entre completa bajo el header. */
-        .hero-media{ object-position: center 33%; }
+        /* El sujeto está arriba y a la IZQUIERDA de la foto (que es cuadrada).
+           En pantallas verticales el recorte es horizontal, y con el foco al
+           50% la cabeza quedaba pegada al borde izquierdo, cortada. Bajarlo
+           al 30% corre el encuadre y deja la cabeza dentro con aire.
+           En escritorio no hay recorte horizontal, así que no le afecta. */
+        .hero-media{ object-position: 30% 33%; }
 
         /* Ficha bajo la prenda: blanca y más grande.
            El negro no se leía contra el motion blur oscuro. */
@@ -900,7 +908,15 @@
         /* Prendas más grandes: menos aire interno y encuadre más alto */
         .product-img-wrap{ aspect-ratio:4/5; }
         .product-img-wrap img{ padding:clamp(2px,0.6vw,10px); }
-        .product-hover-layer{ aspect-ratio:4/5; }
+        /* Solo en escritorio: ahí esta capa va superpuesta sobre la foto y el
+           ratio la ancla a su alto exacto. En móvil pasa a position:static y
+           este mismo ratio la inflaba a ~490px de alto para un botón de 50px,
+           que era el hueco negro entre prenda y prenda.
+           Va acotada por min-width y no en el bloque móvil porque, al estar
+           más abajo en la hoja, ganaba por orden a cualquier override. */
+        @media (min-width:901px){
+            .product-hover-layer{ aspect-ratio:4/5; }
+        }
 
         @media (max-width:800px){
             .product-info .product-name{ font-size:16px; }
@@ -1245,6 +1261,12 @@
 
 <script src="inventario.js"></script>
 
+<!-- cart.js va ANTES de este script: aquí abajo se hace
+     `let cart = ClozkyCart.read()` al cargar la página. Con defer
+     cart.js corría después, el carrito local arrancaba vacío, y el
+     contador —que lo pinta cart.js leyendo localStorage— marcaba 1
+     mientras la bolsa se abría vacía. -->
+<script src="cart.js"></script>
 <script>
 
     /* ── NAV ── */
@@ -1510,7 +1532,6 @@
         setTimeout(precargar, 3000);
     }
 </script>
-<script src="cart.js" defer></script>
 <script src="shell.js" defer></script>
 </body>
 </html>

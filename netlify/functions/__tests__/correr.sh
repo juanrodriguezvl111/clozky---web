@@ -6,5 +6,6 @@ cd "$(dirname "$0")/../../.."
 node netlify/functions/__tests__/create-payment.test.js
 node netlify/functions/__tests__/wompi-webhook.test.js
 node netlify/functions/__tests__/mantener-viva.test.js
+node netlify/functions/__tests__/salud.test.js
 echo ""
 echo "  Todas las pruebas pasan."

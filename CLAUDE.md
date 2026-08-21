@@ -115,8 +115,15 @@ Estado al 19 de agosto de 2026. **Nada de esto está en producción todavía.**
   el bloqueo se auto-alimenta y nunca expira. Y contar solo por IP deja fuera a
   clientes reales, porque el móvil colombiano va por CGNAT: la clave es
   IP+correo.
-- `cart.js` tiene que cargar ANTES del `<script>` en línea que llama a `init()`.
-  Con `defer` corre después y el checkout muestra la bolsa vacía.
+- **Orden de scripts: los `<script src>` compartidos van ANTES del `<script>`
+  en línea que los usa.** Pasó dos veces con el mismo síntoma: fallo silencioso.
+  · `cart.js` después del `init()` del checkout → la bolsa salía vacía.
+  · `inventario.js` en la línea 511 de `producto.html` mientras el código lo
+    llamaba en la 391 → `typeof sincronizarInventario === 'function'` daba
+    false, la guarda lo saltaba sin avisar y la página vendía tallas agotadas
+    con la tabla quemada del archivo.
+  Una guarda `typeof x === 'function'` convierte un error de orden en un bug
+  invisible. Si el script es obligatorio, cárgalo antes y no lo protejas.
 - Las pruebas viven en `netlify/functions/__tests__/`, sin dependencias:
   `sh netlify/functions/__tests__/correr.sh`.
 - El navegador headless de gstack (`browse.exe`) está bloqueado por App Control

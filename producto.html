@@ -303,6 +303,11 @@ footer{border-top:1px solid rgba(255,255,255,.09);padding:34px clamp(16px,3vw,44
   <button class="add" id="add-mobile" disabled>Añadir</button>
 </div>
 
+<!-- inventario.js va ANTES del script en línea: este llama a
+     sincronizarInventario() y la comprobación `typeof === "function"`
+     lo saltaba en silencio, así que el stock real de Supabase no se
+     cargaba nunca y la página vendía tallas agotadas. -->
+<script src="inventario.js"></script>
 <script>
 /* ── Catálogo: la página se arma según ?p=slug ── */
 var CATALOGO = {
@@ -508,7 +513,7 @@ document.querySelectorAll('[data-open="guia"]').forEach(a => {
   });
 });
 </script>
-<script src="inventario.js"></script>
+
 <script src="cart.js" defer></script>
 <script src="shell.js" defer></script>
 </body>

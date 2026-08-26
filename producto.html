@@ -36,6 +36,8 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   transition:opacity .7s var(--ease-out),transform .8s var(--ease-out)}
 .shot.in{opacity:1;transform:none}
 .shot img{width:100%;height:100%;object-fit:cover}
+/* Foto vertical de movil (9:16): el marco toma su proporcion y no recorta */
+.shot--alta{aspect-ratio:9/16}
 /* Recortes con transparencia: se ven enteros y flotan sobre el fondo del sitio */
 .shot--cut{background:transparent;overflow:visible}
 .shot--cut img{object-fit:contain;padding:clamp(10px,2.5vw,34px);
@@ -211,7 +213,7 @@ footer{border-top:1px solid rgba(255,255,255,.09);padding:34px clamp(16px,3vw,44
   <!-- GALERÍA: se recorre con scroll, distintos ángulos -->
   <div class="gallery">
     <figure class="shot"><span class="shot-tag">Frente</span><img src="assets/product1.jpg" alt="Worthless Sacrifice — frente" fetchpriority="high"></figure>
-    <figure class="shot"><span class="shot-tag">Espalda</span><img src="assets/product1b.jpg" alt="Worthless Sacrifice — espalda" loading="lazy"></figure>
+    <figure class="shot"><span class="shot-tag">Look</span><img src="assets/product1b.webp" alt="Worthless Sacrifice — look" loading="lazy"></figure>
     <figure class="shot"><span class="shot-tag">En modelo</span><img src="assets/lookbook1.jpg" alt="Worthless Sacrifice en modelo" loading="lazy"></figure>
     <figure class="shot"><span class="shot-tag">Detalle</span><img src="assets/product2c.jpg" alt="Detalle de la prenda" loading="lazy"></figure>
     <figure class="shot"><span class="shot-tag">Caída</span><img src="assets/lookbook3.jpg" alt="Caída de la prenda" loading="lazy"></figure>
@@ -335,7 +337,7 @@ var CATALOGO = {
     stock: { S: 2, M: 5, L: 4, XL: 0 },
     shots: [
       ['Frente',    'assets/product1-cut.webp',  'cut'],
-      ['Espalda',   'assets/product1b-cut.webp', 'cut'],
+      ['Look',      'assets/product1b.webp',     'alta'],
       ['En modelo', 'assets/lookbook1.jpg',      'foto'],
       ['Caída',     'assets/lookbook3.jpg',      'foto']
     ]

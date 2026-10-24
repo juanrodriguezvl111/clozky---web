@@ -49,6 +49,9 @@
 
   /* Header: sombra sólo cuando ya se bajó */
   if (hdr) {
+    /* Al cargar a mitad de página (ancla o recarga) no siempre llega un
+       scroll: sin esto el header quedaba blanco sobre el fondo claro. */
+    hdr.classList.toggle('is-scrolled', window.scrollY > 24);
     var ticking = false;
     window.addEventListener('scroll', function () {
       if (ticking) return;

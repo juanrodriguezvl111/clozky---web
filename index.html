@@ -36,11 +36,11 @@
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
         :root {
-            --black: #000000;
-            --white: #ffffff;
-            --gray-dark: #0f0f0f;
-            --gray-mid: #1a1a1a;
-            --gray-light: #888888;
+            --paper:#FAFAF8;
+            --ink:#1C1C1C;
+            --gray-dark:#EFEFEC;
+            --gray-mid:#E5E5E2;
+            --gray-light:#6B6B68;
             --red: #E10600;
 
             /* Curvas — las nativas de CSS son demasiado débiles */
@@ -48,16 +48,16 @@
             --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
 
             /* Vidrio */
-            --glass-bg: rgba(20,20,20,0.42);
-            --glass-brd: rgba(255,255,255,0.12);
-            --glass-hi: rgba(255,255,255,0.20);
+            --glass-bg: rgba(250,250,248,0.78);
+            --glass-brd: rgba(28,28,28,0.12);
+            --glass-hi: rgba(28,28,28,0.20);
         }
 
         html { scroll-behavior: smooth; }
 
         body {
-            background: var(--black);
-            color: var(--white);
+            background: var(--paper);
+            color: var(--ink);
             font-family: 'Inter', sans-serif;
             overflow-x: hidden;
         }
@@ -99,7 +99,7 @@
         .hero-logo-img {
             max-width: clamp(300px, 68vw, 880px);
             width: 100%;
-            filter: brightness(0) invert(1);
+            filter: brightness(0);
             object-fit: contain;
             display: block;
         }
@@ -111,7 +111,7 @@
         .hero-mascot {
             max-width: clamp(260px, 42vw, 600px);
             width: 100%;
-            filter: brightness(0) invert(1);
+            filter: brightness(0);
             object-fit: contain;
             display: block;
             margin: 32px auto 0;
@@ -132,23 +132,23 @@
             animation: fade-in 0.8s ease 2.6s forwards;
         }
         .btn-primary {
-            background: var(--white); color: var(--black);
+            background: var(--ink); color: var(--paper);
             padding: 15px 44px;
             font-size: 10px; letter-spacing: 0.32em; text-transform: uppercase;
             text-decoration: none; font-weight: 700;
-            border: 1px solid var(--white);
+            border: 1px solid var(--ink);
             transition: background 0.3s, color 0.3s;
         }
-        .btn-primary:hover { background: transparent; color: var(--white); }
+        .btn-primary:hover { background: transparent; color: var(--ink); }
         .btn-ghost {
-            background: transparent; color: var(--white);
+            background: transparent; color: var(--ink);
             padding: 15px 44px;
             font-size: 10px; letter-spacing: 0.32em; text-transform: uppercase;
             text-decoration: none; font-weight: 600;
-            border: 1px solid rgba(255,255,255,0.25);
+            border: 1px solid rgba(28,28,28,0.25);
             transition: border-color 0.3s;
         }
-        .btn-ghost:hover { border-color: var(--white); }
+        .btn-ghost:hover { border-color: var(--ink); }
         .scroll-cue {
             position: absolute; bottom: 40px; left: 50%;
             transform: translateX(-50%);
@@ -172,8 +172,8 @@
         /* ── MARQUEE ── */
         .marquee-wrap {
             padding: 18px 0; overflow: hidden;
-            border-top: 1px solid rgba(255,255,255,0.08);
-            border-bottom: 1px solid rgba(255,255,255,0.08);
+            border-top: 1px solid rgba(28,28,28,0.08);
+            border-bottom: 1px solid rgba(28,28,28,0.08);
         }
         .marquee-track {
             display: flex; gap: 0; white-space: nowrap;
@@ -231,7 +231,7 @@
         .product-img-wrap {
             width: 100%; aspect-ratio: 3/4; overflow: hidden;
             position: relative;
-            background: linear-gradient(90deg, #111 25%, #1c1c1c 50%, #111 75%);
+            background: linear-gradient(90deg, #EFEFEC 25%, #E5E5E2 50%, #EFEFEC 75%);
             background-size: 400% 100%;
             animation: lk-shimmer 1.4s ease-in-out infinite;
         }
@@ -251,10 +251,10 @@
             align-items: center; justify-content: center; gap: 14px;
             transition: background 0.3s;
         }
-        .product-card:hover .product-placeholder { background: #222; }
+        .product-card:hover .product-placeholder { background: var(--gray-dark); }
         .product-placeholder .ph-icon { opacity: 0.2; }
         .product-placeholder span {
-            font-size: 9px; letter-spacing: 0.2em; color: #3a3a3a; text-transform: uppercase;
+            font-size: 9px; letter-spacing: 0.2em; color: var(--gray-light); text-transform: uppercase;
         }
 
         /* La capa de hover vive DENTRO de la imagen — nunca sobre el texto.
@@ -277,23 +277,23 @@
 
         .quick-add {
             width: 100%; padding: 13px;
-            background: rgba(255,255,255,0.94); color: var(--black);
+            background: rgba(28,28,28,0.94); color: var(--paper);
             border: none; cursor: pointer;
             backdrop-filter: blur(6px);
             font-family: 'Inter', sans-serif;
             font-size: 10px; letter-spacing: 0.24em; text-transform: uppercase; font-weight: 700;
             transition: background 200ms ease, color 200ms ease, transform 160ms var(--ease-out);
         }
-        .quick-add:hover { background: var(--white); }
+        .quick-add:hover { background: var(--ink); }
         .quick-add:active { transform: scale(0.97); }
 
         .product-badge {
             position: absolute; top: 14px; left: 14px; z-index: 2;
-            background: rgba(0,0,0,0.55);
+            background: rgba(250,250,248,0.82);
             backdrop-filter: blur(10px) saturate(160%);
-            border: 1px solid rgba(255,255,255,0.14);
+            border: 1px solid rgba(28,28,28,0.14);
             border-radius: 100px;
-            color: rgba(255,255,255,0.9);
+            color: rgba(28,28,28,0.9);
             font-size: 9px; letter-spacing: 0.2em; font-weight: 600;
             padding: 5px 11px; text-transform: uppercase;
         }
@@ -333,7 +333,7 @@
             flex-direction: column; gap: 12px;
         }
         .brand-visual-placeholder span {
-            font-size: 9px; letter-spacing: 0.2em; color: #2a2a2a; text-transform: uppercase;
+            font-size: 9px; letter-spacing: 0.2em; color: var(--gray-light); text-transform: uppercase;
         }
         .brand-content {
             background: var(--gray-dark);
@@ -353,10 +353,10 @@
             font-size: 14px; line-height: 2.1;
             color: var(--gray-light); font-weight: 300; margin-bottom: 48px;
         }
-        .brand-text strong { color: var(--white); font-weight: 500; }
+        .brand-text strong { color: var(--ink); font-weight: 500; }
 
         /* ── LOOKBOOK ── */
-        #lookbook { border-top: 1px solid rgba(255,255,255,0.06); }
+        #lookbook { border-top: 1px solid rgba(28,28,28,0.06); }
         @keyframes lk-shimmer {
             0%   { background-position: 100% 0; }
             100% { background-position: -100% 0; }
@@ -365,7 +365,7 @@
         #instagram {
             padding: 140px 48px;
             text-align: center;
-            border-top: 1px solid rgba(255,255,255,0.06);
+            border-top: 1px solid rgba(28,28,28,0.06);
             position: relative; overflow: hidden;
         }
         .ig-bg {
@@ -380,7 +380,7 @@
             font-family: 'Inter', sans-serif; font-weight: 700; letter-spacing: -0.03em;
             font-size: clamp(44px, 9vw, 120px);
             letter-spacing: 0.04em; display: block;
-            color: var(--white); text-decoration: none;
+            color: var(--ink); text-decoration: none;
             transition: color 0.3s;
             position: relative;
         }
@@ -398,16 +398,16 @@
         .ig-arrow {
             margin-top: 48px; display: inline-block;
             font-size: 10px; letter-spacing: 0.35em; text-transform: uppercase;
-            color: var(--white); text-decoration: none;
-            border-bottom: 1px solid rgba(255,255,255,0.25); padding-bottom: 6px;
+            color: var(--ink); text-decoration: none;
+            border-bottom: 1px solid rgba(28,28,28,0.25); padding-bottom: 6px;
             transition: border-color 0.3s;
         }
-        .ig-arrow:hover { border-color: var(--white); }
+        .ig-arrow:hover { border-color: var(--ink); }
 
         /* ── FOOTER ── */
         footer {
             padding: 72px 48px 48px;
-            border-top: 1px solid rgba(255,255,255,0.06);
+            border-top: 1px solid rgba(28,28,28,0.06);
             display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 48px;
         }
         .footer-logo {
@@ -425,34 +425,35 @@
         .footer-col ul { list-style: none; }
         .footer-col ul li { margin-bottom: 13px; }
         .footer-col ul li a {
-            color: var(--white); text-decoration: none;
+            color: var(--ink); text-decoration: none;
             font-size: 13px; opacity: 0.8; transition: opacity 0.2s;
         }
         .footer-col ul li a:hover { opacity: 1; }
         .footer-bottom {
             padding: 24px 48px;
-            border-top: 1px solid rgba(255,255,255,0.04);
+            border-top: 1px solid rgba(28,28,28,0.04);
             display: flex; justify-content: space-between; align-items: center;
         }
-        .footer-bottom p { font-size: 11px; color: #3a3a3a; letter-spacing: 0.1em; }
+        .footer-bottom p { font-size: 11px; color: var(--gray-light); letter-spacing: 0.1em; }
 
         /* ── CART SIDEBAR ── */
         .cart-sidebar {
             position: fixed; top: 0; right: -440px; width: 440px; height: 100vh;
-            background: var(--gray-dark);
-            border-left: 1px solid rgba(255,255,255,0.08);
+            background: var(--paper);
+            border-left: 1px solid rgba(28,28,28,0.08);
+            box-shadow: -24px 0 60px rgba(0,0,0,0.08);
             z-index: 2000; display: flex; flex-direction: column;
             transition: right 0.45s cubic-bezier(0.25,0.46,0.45,0.94);
         }
         .cart-sidebar.open { right: 0; }
         .cart-hdr {
             padding: 24px 28px;
-            border-bottom: 1px solid rgba(255,255,255,0.08);
+            border-bottom: 1px solid rgba(28,28,28,0.08);
             display: flex; justify-content: space-between; align-items: center;
         }
         .cart-hdr h3 { font-size: 11px; letter-spacing: 0.3em; text-transform: uppercase; }
         .cart-close {
-            background: none; border: none; color: var(--white);
+            background: none; border: none; color: var(--ink);
             font-size: 28px; cursor: pointer; line-height: 1; opacity: 0.7;
             transition: opacity 0.2s;
         }
@@ -462,7 +463,7 @@
         .cart-empty p { font-size: 11px; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gray-light); }
         .cart-item {
             display: grid; grid-template-columns: 72px 1fr auto; gap: 16px;
-            padding: 18px 0; border-bottom: 1px solid rgba(255,255,255,0.05);
+            padding: 18px 0; border-bottom: 1px solid rgba(28,28,28,0.05);
         }
         .ci-thumb {
             width: 72px; height: 90px;
@@ -475,9 +476,21 @@
         .ci-name { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 6px; }
         .ci-detail { font-size: 10px; color: var(--gray-light); }
         .ci-price { font-family: 'Inter', sans-serif; font-weight: 700; letter-spacing: -0.03em; font-size: 20px; align-self: start; }
+        .ci-side {
+            display: flex; flex-direction: column; align-items: flex-end; justify-content: space-between;
+        }
+        .ci-remove {
+            width: 32px; height: 32px; margin-right: -9px;
+            display: flex; align-items: center; justify-content: center;
+            background: none; border: 0; cursor: pointer;
+            color: var(--gray-light);
+            transition: color 0.2s, transform 160ms var(--ease-out);
+        }
+        .ci-remove:hover { color: var(--ink); }
+        .ci-remove:active { transform: scale(0.9); }
         .cart-ftr {
             padding: 24px 28px;
-            border-top: 1px solid rgba(255,255,255,0.08);
+            border-top: 1px solid rgba(28,28,28,0.08);
         }
         .cart-total-row {
             display: flex; justify-content: space-between; align-items: baseline;
@@ -487,30 +500,30 @@
         .cart-total-price { font-family: 'Inter', sans-serif; font-weight: 700; letter-spacing: -0.03em; font-size: 26px; }
         .checkout-btn {
             width: 100%; padding: 16px;
-            background: var(--white); color: var(--black);
+            background: var(--ink); color: var(--paper);
             border: none; cursor: pointer;
             font-family: 'Inter', sans-serif;
             font-size: 10px; letter-spacing: 0.32em; text-transform: uppercase; font-weight: 700;
             margin-bottom: 14px;
             transition: background 0.3s, color 0.3s;
         }
-        .checkout-btn:hover { background: var(--red); color: var(--white); }
+        .checkout-btn:hover { background: var(--red); color: #fff; }
         .checkout-note { font-size: 9px; letter-spacing: 0.2em; text-align: center; color: var(--gray-light); text-transform: uppercase; }
 
         /* ── QUANTITY SELECTOR (modal) ── */
         .qty-row { display: flex; align-items: center; margin-bottom: 28px; gap: 0; }
         .qty-btn {
             width: 38px; height: 38px; background: transparent;
-            border: 1px solid rgba(255,255,255,0.18); color: var(--white);
+            border: 1px solid rgba(28,28,28,0.18); color: var(--ink);
             font-size: 18px; line-height: 1; cursor: pointer; font-family: 'Inter', sans-serif;
             transition: background 0.2s, color 0.2s;
             display: flex; align-items: center; justify-content: center;
         }
-        .qty-btn:hover { background: var(--white); color: var(--black); }
+        .qty-btn:hover { background: var(--ink); color: var(--paper); }
         .qty-num {
             min-width: 48px; height: 38px;
-            border-top: 1px solid rgba(255,255,255,0.18);
-            border-bottom: 1px solid rgba(255,255,255,0.18);
+            border-top: 1px solid rgba(28,28,28,0.18);
+            border-bottom: 1px solid rgba(28,28,28,0.18);
             display: flex; align-items: center; justify-content: center;
             font-size: 13px; font-weight: 500; letter-spacing: 0.08em;
         }
@@ -519,28 +532,28 @@
         .ci-qty-row { display: flex; align-items: center; margin-top: 8px; gap: 0; }
         .ci-qty-btn {
             width: 26px; height: 26px; background: transparent;
-            border: 1px solid rgba(255,255,255,0.12); color: var(--white);
+            border: 1px solid rgba(28,28,28,0.12); color: var(--ink);
             font-size: 14px; line-height: 1; cursor: pointer;
             display: flex; align-items: center; justify-content: center;
             transition: background 0.2s;
         }
-        .ci-qty-btn:hover { background: rgba(255,255,255,0.08); }
+        .ci-qty-btn:hover { background: rgba(28,28,28,0.08); }
         .ci-qty-num {
             min-width: 32px; height: 26px;
-            border-top: 1px solid rgba(255,255,255,0.12);
-            border-bottom: 1px solid rgba(255,255,255,0.12);
+            border-top: 1px solid rgba(28,28,28,0.12);
+            border-bottom: 1px solid rgba(28,28,28,0.12);
             display: flex; align-items: center; justify-content: center;
             font-size: 11px; letter-spacing: 0.06em;
         }
         .sold-out-overlay {
             position: absolute; inset: 0; z-index: 3;
-            background: rgba(0,0,0,0.55);
+            background: rgba(250,250,248,0.6);
             display: flex; align-items: center; justify-content: center;
         }
         .sold-out-overlay span {
             font-size: 10px; letter-spacing: 0.4em; text-transform: uppercase;
-            color: rgba(255,255,255,0.55); border: 1px solid rgba(255,255,255,0.25);
-            padding: 6px 16px; background: rgba(0,0,0,0.7);
+            color: rgba(28,28,28,0.55); border: 1px solid rgba(28,28,28,0.25);
+            padding: 6px 16px; background: rgba(250,250,248,0.92);
         }
         .modal-desc { font-size: 13px; line-height: 2; color: var(--gray-light); margin-bottom: 32px; }
 
@@ -558,12 +571,12 @@
 
         /* ── LOGO IMG ── */
         .nav-logo { text-decoration: none; display: flex; align-items: center; }
-        .nav-logo-img { height: 34px; filter: brightness(0) invert(1); object-fit: contain; display: block; }
+        .nav-logo-img { height: 34px; filter: brightness(0); object-fit: contain; display: block; }
         .nav-logo-fallback {
             font-family: 'Inter', sans-serif; font-weight: 700; letter-spacing: -0.03em;
-            font-size: 26px; letter-spacing: 0.18em; color: var(--white);
+            font-size: 26px; letter-spacing: 0.18em; color: var(--ink);
         }
-        .footer-logo-img { height: 52px; filter: brightness(0) invert(1); object-fit: contain; display: block; margin-bottom: 16px; }
+        .footer-logo-img { height: 52px; filter: brightness(0); object-fit: contain; display: block; margin-bottom: 16px; }
         .footer-logo-fallback {
             font-family: 'Inter', sans-serif; font-weight: 700; letter-spacing: -0.03em;
             font-size: 40px; letter-spacing: 0.16em; display: block; margin-bottom: 16px;
@@ -577,8 +590,8 @@
 
         /* ── SCROLLBAR ── */
         ::-webkit-scrollbar { width: 2px; }
-        ::-webkit-scrollbar-track { background: var(--black); }
-        ::-webkit-scrollbar-thumb { background: #2a2a2a; }
+        ::-webkit-scrollbar-track { background: var(--paper); }
+        ::-webkit-scrollbar-thumb { background: var(--gray-light); }
 
         /* ── TOUCH DEVICES: ocultar cursor personalizado ── */
         @media (pointer: coarse) {
@@ -717,7 +730,7 @@
         .hero-content{ position:relative; z-index:2; text-align:center; padding:0 24px; }
         .hero-eyebrow{
             font-size:10px; letter-spacing:.42em; text-transform:uppercase;
-            color:rgba(255,255,255,.72); margin-bottom:14px;
+            color:rgba(28,28,28,.72); margin-bottom:14px;
             opacity:0; animation:fade-in .8s ease .35s forwards;
         }
         .hero-title{
@@ -746,10 +759,10 @@
         .ticket{
             position:relative; display:grid;
             grid-template-columns:1fr auto;
-            width:min(880px,100%); text-decoration:none; color:var(--white);
+            width:min(880px,100%); text-decoration:none; color:var(--ink);
             background:linear-gradient(157deg,#f4f2ec 0%,#e6e3da 44%,#f0eee7 100%);
             color:#141312;
-            box-shadow:0 30px 70px rgba(0,0,0,.55), 0 8px 18px rgba(0,0,0,.4);
+            box-shadow:0 30px 70px rgba(0,0,0,.14), 0 8px 18px rgba(0,0,0,.08);
             transition:transform .5s var(--ease-out), box-shadow .5s var(--ease-out);
         }
         /* Fibra del cartón */
@@ -766,7 +779,7 @@
         }
         .ticket__perf::before,.ticket__perf::after{
             content:''; position:absolute; left:50%; width:20px; height:20px; border-radius:50%;
-            background:#0b0b0b; transform:translateX(-50%);
+            background:var(--paper); transform:translateX(-50%);
         }
         .ticket__perf::before{ top:-10px; }
         .ticket__perf::after{ bottom:-10px; }
@@ -816,7 +829,7 @@
         @media (hover:hover) and (pointer:fine){
             .ticket:hover{
                 transform:translateY(-6px) rotate(-.5deg);
-                box-shadow:0 44px 90px rgba(0,0,0,.62), 0 12px 24px rgba(0,0,0,.45);
+                box-shadow:0 44px 90px rgba(0,0,0,.2), 0 12px 24px rgba(0,0,0,.1);
             }
             .ticket:hover .ticket__cta svg{ transform:translateX(4px); }
         }
@@ -855,7 +868,7 @@
         .product-info{
             background:transparent;
             color:#0d0d0c;
-            text-shadow:0 1px 0 rgba(255,255,255,.18);   /* legibilidad sobre gris */
+            text-shadow:0 1px 0 rgba(28,28,28,.18);   /* legibilidad sobre gris */
         }
         .product-info .product-name{ color:#0d0d0c; font-weight:600; }
         .product-info .product-sub{ color:rgba(13,13,12,.62); }
@@ -863,14 +876,14 @@
 
         /* Sombra suave bajo la prenda para que "flote" y no quede pegada */
         .product-img-wrap img{
-            filter:drop-shadow(0 24px 34px rgba(0,0,0,.45));
+            filter:drop-shadow(0 24px 34px rgba(0,0,0,.14));
         }
 
         /* Recortes con transparencia: la prenda debe caber entera, no recortarse */
         .product-img-wrap img{
             object-fit:contain;
             padding:clamp(10px,2vw,26px);
-            filter:drop-shadow(0 26px 38px rgba(0,0,0,.55));
+            filter:drop-shadow(0 26px 38px rgba(0,0,0,.16));
         }
 
         /* =========================================================
@@ -884,24 +897,23 @@
            En escritorio no hay recorte horizontal, así que no le afecta. */
         .hero-media{ object-position: 30% 33%; }
 
-        /* Ficha bajo la prenda: blanca y más grande.
-           El negro no se leía contra el motion blur oscuro. */
+        /* Ficha bajo la prenda: tinta y más grande. */
         .product-info{
-            color:#fff;
-            text-shadow:0 1px 14px rgba(0,0,0,.85);
+            color:var(--ink);
+            text-shadow:none;
             padding:20px 2px 10px;
             gap:5px;
         }
         .product-info .product-sub{
-            color:rgba(255,255,255,.62);
+            color:rgba(28,28,28,.62);
             font-size:10.5px; letter-spacing:.22em;
         }
         .product-info .product-name{
-            color:#fff;
+            color:var(--ink);
             font-size:17px; font-weight:600; letter-spacing:-.01em;
         }
         .product-info .product-price{
-            color:rgba(255,255,255,.78);
+            color:rgba(28,28,28,.78);
             font-size:15px; font-weight:400; letter-spacing:0;
         }
 
@@ -923,31 +935,39 @@
             .product-info .product-price{ font-size:14px; }
         }
 
-        /* Botón que NO se invierte al pasar el mouse: se queda blanco.
+        /* Botón que NO se invierte al pasar el mouse: se queda negro.
            Mantiene el acuse de pulsación, que sí hace falta. */
         .btn-static,
         .btn-static:hover,
         .btn-static:focus-visible{
-            background: var(--white);
-            color: var(--black);
-            border-color: var(--white);
+            background: var(--ink);
+            color: var(--paper);
+            border-color: var(--ink);
         }
         .btn-static{ transition: transform 160ms var(--ease-out); }
+
+        /* =========================================================
+           HERO sobre foto: el sitio es claro, pero aquí el texto
+           va encima de la imagen y se queda en blanco.
+           ========================================================= */
+        #hero{ color:#fff; }
+        #hero .hero-eyebrow{ color:rgba(255,255,255,.72); }
+        #hero .btn-primary{ background:#fff; color:var(--ink); border-color:#fff; }
+        #hero .btn-primary:hover{ background:transparent; color:#fff; }
+        #hero .scroll-cue span{ color:rgba(255,255,255,.7); }
+        #hero .scroll-line{ background:rgba(255,255,255,.7); }
         .btn-static:active{ transform: scale(0.98); }
 </style>
 </head>
 <body>
 
-<!-- ── ATMÓSFERA: larga exposición en movimiento ── -->
+<!-- ── FONDO ── -->
 <div class="atmos" aria-hidden="true">
-    <div class="atmos__layer atmos__layer--a"></div>
-    <div class="atmos__layer atmos__layer--b"></div>
-    <div class="atmos__scrim"></div>
     <div class="atmos__grain"></div>
 </div>
 
 <!-- ── HEADER ── -->
-<header class="hdr">
+<header class="hdr hdr--hero">
     <div class="hdr__side">
         <button class="burger" id="burger" aria-label="Abrir menú" aria-expanded="false" aria-controls="drawer">
             <span></span><span></span><span></span>
@@ -1114,7 +1134,7 @@
             <div class="product-img-wrap">
                 <img src="assets/product1-cut.webp" alt="WORTHLESS SACRIFICE" loading="lazy" decoding="async" onload="this.closest('.product-img-wrap').classList.add('img-loaded')" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
                 <div class="product-placeholder" style="display:none">
-                    <svg class="ph-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="0.8"><rect x="3" y="3" width="18" height="18" rx="1"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                    <svg class="ph-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#1C1C1C" stroke-width="0.8"><rect x="3" y="3" width="18" height="18" rx="1"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
                     <span>assets/product1-cut.webp</span>
                 </div>
             </div>
@@ -1131,11 +1151,11 @@
 
         <!-- Producto 2: NO GRACE -->
         <div class="product-card" style="transition-delay:0.12s" onclick="location.href='producto.html?p=nograce'">
-            <div class="product-badge" style="background:#1a1a1a;border:1px solid rgba(255,255,255,0.15)">New</div>
+            <div class="product-badge">New</div>
             <div class="product-img-wrap">
                 <img src="assets/product2-cut.webp" alt="NO GRACE" loading="lazy" decoding="async" onload="this.closest('.product-img-wrap').classList.add('img-loaded')" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
                 <div class="product-placeholder" style="display:none">
-                    <svg class="ph-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="0.8"><rect x="3" y="3" width="18" height="18" rx="1"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                    <svg class="ph-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#1C1C1C" stroke-width="0.8"><rect x="3" y="3" width="18" height="18" rx="1"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
                     <span>assets/product2-cut.webp</span>
                 </div>
             </div>
@@ -1152,11 +1172,11 @@
 
         <!-- Producto 3: DEVIL'S F*CKING EVIL -->
         <div class="product-card" style="transition-delay:0.24s" onclick="location.href='producto.html?p=devil'">
-            <div class="product-badge" style="background:#1a1a1a;border:1px solid rgba(255,255,255,0.15)">New</div>
+            <div class="product-badge">New</div>
             <div class="product-img-wrap">
                 <img src="assets/product3-cut.webp" alt="DEVIL'S F*CKING EVIL" loading="lazy" decoding="async" onload="this.closest('.product-img-wrap').classList.add('img-loaded')" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
                 <div class="product-placeholder" style="display:none">
-                    <svg class="ph-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="0.8"><rect x="3" y="3" width="18" height="18" rx="1"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                    <svg class="ph-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#1C1C1C" stroke-width="0.8"><rect x="3" y="3" width="18" height="18" rx="1"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
                     <span>assets/product3-cut.webp</span>
                 </div>
             </div>
@@ -1391,7 +1411,12 @@
                         <button class="ci-qty-btn" onclick="changeCartQty(${i},1)">+</button>
                     </div>
                 </div>
-                <span class="ci-price">${fmt(item.price * item.qty)}</span>
+                <div class="ci-side">
+                    <span class="ci-price">${fmt(item.price * item.qty)}</span>
+                    <button class="ci-remove" onclick="removeFromCart(${i})" aria-label="Quitar ${item.name} talla ${item.size} de la bolsa">
+                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M1 1l10 10M11 1L1 11"/></svg>
+                    </button>
+                </div>
             </div>`;
         }).join('');
         document.getElementById('cart-total').textContent = fmt(cartTotal());
@@ -1426,6 +1451,14 @@
         }
         item.qty += delta;
         if (item.qty <= 0) cart.splice(index, 1);
+        if (window.ClozkyCart) window.ClozkyCart.write(cart);
+        refreshCount();
+        renderCartBody();
+    }
+
+    /* Antes la única forma de sacar una prenda era bajar la cantidad a 0. */
+    function removeFromCart(index) {
+        cart.splice(index, 1);
         if (window.ClozkyCart) window.ClozkyCart.write(cart);
         refreshCount();
         renderCartBody();

@@ -162,7 +162,7 @@ footer{border-top:1px solid rgba(28,28,28,.09);padding:34px clamp(16px,3vw,44px)
     </div>
     <a class="hdr__logo" href="index.html" aria-label="Clozky — inicio"><img src="assets/logo.png" alt="Clozky"></a>
     <div class="hdr__side hdr__side--right">
-        <button class="cartbtn" onclick="location.href='checkout.html'" aria-label="Ver la bolsa">
+        <button class="cartbtn" aria-label="Ver la bolsa">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"
                  stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <path d="M6 7h12l-1.2 11.2a2 2 0 0 1-2 1.8H9.2a2 2 0 0 1-2-1.8L6 7Z"/>
@@ -238,7 +238,7 @@ footer{border-top:1px solid rgba(28,28,28,.09);padding:34px clamp(16px,3vw,44px)
 
     <button class="add" id="add" disabled>Selecciona tu talla</button>
     <div class="assure"><span>Envío 2–4 días</span><span>Cambio de talla gratis</span></div>
-    <a class="ir-bolsa" id="ir-bolsa" href="checkout.html" hidden>Ir a la bolsa &rarr;</a>
+    <a class="ir-bolsa" id="ir-bolsa" href="checkout.html" data-bolsa-open hidden>Ir a la bolsa &rarr;</a>
 
     <p class="desc">Corte oversize que cae solo. La primera pieza de Saints or Sinners.
       Hecha en Colombia en tirada corta: cuando se acaba, no vuelve.</p>
@@ -514,5 +514,6 @@ document.querySelectorAll('[data-open="guia"]').forEach(a => {
 
 <script src="cart.js" defer></script>
 <script src="shell.js" defer></script>
+<script src="bolsa.js" defer></script>
 </body>
 </html>

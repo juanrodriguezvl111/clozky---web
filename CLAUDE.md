@@ -1,3 +1,94 @@
+# Vault: Página web Clozky — tienda en producción
+
+## Qué es
+Tienda e-commerce **real y en producción** de Clozky Studios (streetwear high-end, Colombia).
+Nació del kit "web-scrolling", pero **no** se actúa como asistente de creación de webs: es una tienda
+que cobra dinero de verdad.
+
+- **Live**: https://tranquil-beignet-2ef138.netlify.app (Netlify, publish en la raíz)
+- **Pagos**: Wompi PRODUCCIÓN (`pub_prod_...`). Firma server-side y webhook con auth obligatoria.
+- **Datos**: Supabase `opcnglllvppfavjjpjkf` (tablas `inventario` y `pedidos`).
+
+## Reglas de trabajo
+1. **Precios y montos SIEMPRE se validan en servidor.** Nunca confiar en el cliente.
+2. **El evento Purchase del Pixel solo se dispara con pago APROBADO.**
+3. **Pixel web ADSM real** (`2256599795114564`), NUNCA el App ID.
+4. **Copy de marca**: el lujo no grita specs. Nunca mencionar gramaje, serigrafía ni "calidad".
+
+## ESTE VAULT ES UN WIKI (patrón llm-wiki)
+Tres capas, y la regla que las separa:
+
+| Capa | Carpeta | Quién escribe |
+|---|---|---|
+| **Fuentes crudas** | `raw/` (+ `raw/assets/`) | Solo Juan. **Yo leo, nunca edito ni borro nada aquí.** |
+| **El wiki** | `01`–`06`, `index.md`, `log.md` | **Solo yo.** Juan lee y navega en Obsidian. |
+| **El esquema** | este `CLAUDE.md` | Los dos, cuando descubrimos que algo no funciona. |
+
+### Mapa del wiki
+- `index.md` — catálogo de TODO el wiki. Se lee primero, siempre.
+- `log.md` — append-only. Formato `## [YYYY-MM-DD] tipo | Título`. Tipos: `ingest`, `query`, `lint`, `session`.
+- `00 Inbox/` — lo que aún no sé dónde archivar.
+- `01 Memoria/` — `Preferencias de Juan.md` (qué aprueba/rechaza y el porqué) · `Decisiones.md` (rumbo, fechado).
+- `02 Sitio/` — páginas de entidad.
+- `03 Conocimiento/` — páginas de concepto: cómo se hace algo.
+- `04 Componentes/` — el trabajo entregable: lo que se produce y ya está aprobado.
+- `05 Referencias/` — imágenes y archivos de referencia. Insertar con imagen embebida de Obsidian.
+- `06 Fuentes/` — un resumen por fuente ingerida desde `raw/`.
+
+### El proyecto vive DENTRO de este vault
+La carpeta del proyecto se fusionó aquí el **2026-09-10**: sus archivos, código y activos están en la
+raíz de este vault, al lado del wiki. **Ya no existe una carpeta aparte en `Claude\proyectos\`.**
+Este vault es a la vez el cerebro y el proyecto: se abre en Obsidian para leer y navegar, y con Claude
+Code para trabajar. Las carpetas numeradas `00`-`06` son el wiki; el resto es el proyecto.
+
+## PROTOCOLO DE MEMORIA — OBLIGATORIO
+Si un hecho no está escrito en el wiki, no existe. Nunca depender de la conversación para recordar.
+
+1. **Al iniciar CADA sesión**: leer `index.md` y las últimas entradas del log (`grep "^## \[" log.md | tail -5`). Sin excepciones.
+2. **Escribir en el momento**, nunca al final: cuando Juan apruebe, corrija o decida una ruta → a su página, ya.
+3. **Dónde va cada cosa**:
+   - Preferencia o corrección de Juan → `01 Memoria/Preferencias de Juan.md`
+   - Decisión de rumbo → `01 Memoria/Decisiones.md`
+   - Dato de una entidad → su ficha en `02 Sitio/`
+   - Aprendizaje técnico reusable → nota nueva en `03 Conocimiento/`
+   - Pieza terminada y aprobada → `04 Componentes/`
+   - Sin destino claro → `00 Inbox/`
+4. **Toda nota nueva** lleva frontmatter YAML (`tipo`, `tags`, `actualizado`) + wikilinks `[[...]]` a lo relacionado. Un `[[nombre]]` que aún no existe es válido: marca deuda.
+5. **Toda nota nueva se registra en `index.md`** en el mismo paso. El índice nunca queda desactualizado.
+6. **Fechas absolutas** (2026-09-10), nunca "ayer" ni "la semana pasada".
+7. **Escribir en UTF-8.** Si aparece mojibake, reconstruir desde el original, no parchear a mano.
+8. **Ninguna cifra sin fuente y fecha.** Formato `[CONFIRMADO — fuente, fecha]` o `[SUPUESTO]`.
+
+## OPERACIONES
+
+### Ingest — Juan trae una fuente
+1. Juan deja el archivo en `raw/` y dice "ingesta esto".
+2. Leo la fuente completa. Discuto los puntos clave **antes** de escribir. No archivo en silencio.
+3. Escribo `06 Fuentes/<título>.md`: qué dice, qué cambia en el wiki, contradicciones y cuál gana.
+4. Actualizo TODAS las páginas afectadas. Una fuente puede tocar 10+ páginas: es lo normal.
+5. Actualizo `index.md` y agrego `## [fecha] ingest | Título` al `log.md`.
+
+### Query — Juan pregunta
+1. Leo `index.md`, localizo las páginas relevantes, respondo **con citas a `[[páginas]]`**.
+2. Si la respuesta tiene valor duradero, la archivo como página nueva. No se queda en el chat.
+
+### Lint — health-check periódico
+Cuando Juan diga "lint" o cada ~10 ingests: contradicciones, afirmaciones superadas, páginas huérfanas,
+enlaces `[[rotos]]`, frontmatter faltante, mojibake, y huecos de datos que valdría llenar.
+Reportar y proponer. No arreglar en masa sin confirmar.
+
+## Antes de tocar código — leer
+[[Arquitectura del sitio]] · [[Pagos y pedidos]] · [[Seguridad y RLS]] · [[Trampas de front]] ·
+[[Pendientes]] · [[Rediseno Effortless]]
+
+---
+
+# Instrucciones originales del proyecto (verbatim, sin recortar)
+
+> Este bloque es el `CLAUDE.md` que traía la carpeta del proyecto antes de fusionarse en el
+> vault (2026-09-10). Se conserva completo. Si algo aquí contradice al esquema del wiki de
+> arriba, **manda lo de arriba** salvo que sea un dato del proyecto.
+
 # Clozky Studios — Tienda online (PRODUCCIÓN)
 
 Tienda e-commerce real de Clozky Studios (streetwear high-end, Colombia).

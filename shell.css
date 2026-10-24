@@ -266,7 +266,7 @@
     display: flex; justify-content: space-between; align-items: baseline;
     margin-bottom: 20px;
 }
-.cart-total-row span { font-size: 11px; letter-spacing: 0.25em; text-transform: uppercase; }
+.cart-total-row > span:first-child { font-size: 11px; letter-spacing: 0.25em; text-transform: uppercase; }
 .cart-total-price { font-family: 'Inter', sans-serif; font-weight: 700; letter-spacing: -0.03em; font-size: 26px; }
 .checkout-btn {
     width: 100%; padding: 16px;
@@ -297,7 +297,6 @@
     font-size: 11px; letter-spacing: 0.06em;
 }
 .cart-sidebar{ color:var(--ink); font-family:'Inter',sans-serif; }
-.cart-sidebar p{ margin:0; }
 .cart-sidebar button{ font-family:inherit; }
 @media (max-width:900px){
   .cart-sidebar { width: 100%; right: -100%; }

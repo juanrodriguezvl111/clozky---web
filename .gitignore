@@ -17,3 +17,7 @@ screenshot-*.png
 .DS_Store
 Thumbs.db
 _fuentes/
+
+# Documentación interna (no se publica)
+reglas/
+_archivo/

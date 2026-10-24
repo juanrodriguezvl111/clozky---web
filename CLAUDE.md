@@ -7,7 +7,7 @@ Este `CLAUDE.md` + la carpeta `reglas/`. No hay wiki, no hay Obsidian y no uso m
 - `_archivo/` = material viejo (wiki, CLAUDE.md anterior). **No se lee ni se usa** salvo que Juan lo pida.
 - Cuando Juan apruebe, corrija o decida algo: se escribe en el momento en el archivo de `reglas/` que corresponde, **reemplazando** la regla vieja. Fechas absolutas.
 - Si una regla nueva choca con una existente: gana la más reciente, se borra la vieja y se le avisa a Juan.
-- **Netlify publica la raíz del repo**: todo archivo versionado queda público en la web. Por eso `reglas/` y `_archivo/` **no se commitean** y este `CLAUDE.md` no lleva detalles de seguridad. Nada sensible va a un archivo versionado.
+- **Netlify publica la raíz del repo**: todo archivo versionado queda público en la web. Por eso `reglas/` y `_archivo/` están en `.gitignore` y este `CLAUDE.md` no lleva detalles de seguridad. Nada sensible va a un archivo versionado.
 
 ## Lo activo
 - **Live**: https://clozkygallery.netlify.app (Netlify, publish en la raíz, deploy automático desde GitHub `main`). El subdominio viejo `tranquil-beignet-2ef138.netlify.app` ya no existe (404).
